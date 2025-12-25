@@ -2,9 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt update && apt upgrade -y \
-    && rm -rf /var/lib/apt/lists/*
+# Dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    unzip \
+    ca-certificates \
+    cron \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* 
 
 ##############################################################
 
@@ -18,18 +24,38 @@ RUN apt update && apt upgrade -y \
 
 ###############################################################
 
-# 2. Instalar Google Chrome (versión estable)
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    # Instalar ChromeDriver (importante para Selenium)
-    && wget -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/121.0.6167.85/linux64/chromedriver-linux64.zip \
-    && unzip /tmp/chromedriver.zip -d /tmp/ \
-    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
-    && chmod +x /usr/local/bin/chromedriver \
-    # Limpieza
-    && rm -rf /var/lib/apt/lists/* /tmp/*
+# # Agregar keyring de Google
+RUN wget -q -O /usr/share/keyrings/google-linux-signing-keyring.gpg \
+     https://dl.google.com/linux/linux_signing_key.pub
+
+# Agregar repo de Chrome
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] \
+     http://dl.google.com/linux/chrome/deb/ stable main" \
+     > /etc/apt/sources.list.d/google-chrome.list
+
+# Instalar Google Chrome
+RUN apt-get update && apt-get install -y \
+     google-chrome-stable \
+     --no-install-recommends \
+     && rm -rf /var/lib/apt/lists/*
+
+# Instalar ChromeDriver
+#RUN wget -O /tmp/chromedriver.zip \
+ #   https://storage.googleapis.com/chrome-for-testing-public/121.0.6167.85/linux64/chromedriver-linux64.zip \
+  #  && unzip /tmp/chromedriver.zip -d /tmp/ \
+   # && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    #&& chmod +x /usr/local/bin/chromedriver \
+    #&& rm -rf /tmp/*
+
+# Instalar ChromeDriver que coincida con la versión de Chrome
+RUN set -eux; \
+    CHROME_VERSION=$(google-chrome --version | awk '{print $3}'); \
+    wget -O /tmp/chromedriver.zip \
+      "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"; \
+    unzip /tmp/chromedriver.zip -d /tmp/; \
+    mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver; \
+    chmod +x /usr/local/bin/chromedriver; \
+    rm -rf /tmp/*
 
 # Instalar dependencias de Python
 COPY requirements.txt .
@@ -37,6 +63,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar aplicación
 COPY . .
+
+#RUN chmod +x ./run-scripts.sh
+#RUN ./run-scripts.sh &
+
+# Agrega la tarea cron
+RUN echo "*/5 * * * * python /app/scripts/scrap_elsiglo.py >> /var/log/cron.log 2>&1" > /etc/cron.d/scraper \
+    && chmod 0644 /etc/cron.d/scraper \
+    && crontab /etc/cron.d/scraper
 
 # Crear usuario no-root
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app

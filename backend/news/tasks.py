@@ -10,15 +10,15 @@ def scrap_elsiglo(self, max_articles=15):
     """
     try:
         print(f"[{timezone.now()}] Iniciando scraping de El Siglo...")
-        
+
         # Agregar directorio scripts al path
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
-        
+
         # Importar y ejecutar scraping
         from scripts.scrap_elsiglo import ejecutar_scraping
-        
+
         procesadas = ejecutar_scraping(max_noticias=max_articles)
-        
+
         return {
             'status': 'success',
             'task': 'scrap_elsiglo',
@@ -26,12 +26,12 @@ def scrap_elsiglo(self, max_articles=15):
             'timestamp': timezone.now().isoformat(),
             'message': f'Procesadas {procesadas} noticias'
         }
-        
+
     except Exception as e:
         print(f"Error en scraping: {e}")
         # Reintentar después de 5 minutos
         raise self.retry(exc=e, countdown=300)
-    
+
 @shared_task
 def limpiar_articulos_antiguos(dias=30):
     """
@@ -41,20 +41,20 @@ def limpiar_articulos_antiguos(dias=30):
         from django.utils import timezone
         from datetime import timedelta
         from .models import Article
-        
+
         fecha_limite = timezone.now() - timedelta(days=dias)
         count = Article.objects.filter(scraped_at__lt=fecha_limite).count()
-        
+
         if count > 0:
             Article.objects.filter(scraped_at__lt=fecha_limite).delete()
             print(f"[{timezone.now()}] Eliminados {count} artículos antiguos")
-        
+
         return {
             'status': 'success',
             'articles_deleted': count,
             'timestamp': timezone.now().isoformat()
         }
-        
+
     except Exception as e:
         print(f"Error limpiando artículos: {e}")
         return {
@@ -69,10 +69,10 @@ def verificar_estado():
     """
     try:
         from .models import Article
-        
+
         total = Article.objects.count()
         ultimo = Article.objects.order_by('-scraped_at').first()
-        
+
         return {
             'status': 'ok',
             'total_articles': total,
