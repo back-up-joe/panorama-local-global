@@ -51,7 +51,11 @@ RUN echo "* * * * * /usr/local/bin/python /app/scripts/scrap_elsiglo.py >> /var/
     && chmod 0644 /etc/cron.d/scraper \
     && crontab /etc/cron.d/scraper
 
-#RUN echo "* * * * * python scripts/scrap_elsiglo.py >> /var/log/cron.log 2>&1" > /etc/cron.d/scraper \
+COPY docker/cron/cronjob /etc/cron.d/cronjob
+RUN chmod 0644 /etc/cron.d/cronjob \
+    && touch /var/log/cron.log
+
+    #RUN echo "* * * * * python scripts/scrap_elsiglo.py >> /var/log/cron.log 2>&1" > /etc/cron.d/scraper \
  #   && chmod 0644 /etc/cron.d/scraper \
   #  && crontab /etc/cron.d/scraper
 
@@ -65,5 +69,11 @@ EXPOSE 8000
 # Comando por defecto
 # CMD ["gunicorn", "scraper.wsgi:application", "--bind", "0.0.0.0:8000"]
 
-CMD ["/entrypoint.sh"]
+#CMD ["/entrypoint.sh"]
+CMD ["/app/entrypoint.sh"]
 
+##############################
+
+#COPY docker/entrypoint.sh /entrypoint.sh
+#RUN chmod +x /entrypoint.sh
+#ENTRYPOINT ["/app/entrypoint.sh"]

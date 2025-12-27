@@ -85,11 +85,17 @@ WSGI_APPLICATION = 'scraper.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'scrap_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'Sant27#sanT'),
-        'HOST': os.getenv('DB_HOST', 'db'), # Cambiado a 'db' para Docker
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'), # Cambiado a 'db' para Docker
+        'PORT': os.getenv('DB_PORT'),
+        #'OPTIONS': {
+         #   'connect_timeout': 10,
+            # Esto fuerza TCP/IP en lugar de sockets Unix
+          #  'cliente_encoding': 'UTF8',
+           # 'sslmode': 'disable',
+        #},
     }
 }
 
