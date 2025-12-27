@@ -22,11 +22,11 @@ services:
   backend:
     build: ./backend
     container_name: django_backend
-    command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn scraper.wsgi:application --bind 0.0.0.0:8000"
+    #command: >
+     # sh -c "python manage.py makemigrations &&
+      #       python manage.py migrate &&
+       #      python manage.py collectstatic --noinput &&
+        #     gunicorn scraper.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend:/app
       - static_volume:/app/staticfiles
@@ -39,10 +39,10 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db #### Adjusted to use environment variable
       DB_PORT: ${DB_PORT}
       TZ: America/Santiago
       DJANGO_SETTINGS_MODULE: scraper.settings

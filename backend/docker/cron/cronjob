@@ -1,14 +1,7 @@
-# --- Variables y PATH para cron --- 
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:bin
-DJANGO_SETTINGS_MODULE=scraper.settings
-PYTHONUNBUFFERED=1
+# Variables de entorno para cron
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PYTHONPATH=/app
 
-DB_NAME=scrap_db
-DB_USER=postgres
-DB_PASSWORD=Sant27#sanT
-DB_HOST=db
-DB_PORT=5432
-
-# --- Tarea programada: cada 1 minuto ---
-# m h dom dow user command
-* * * * * root /usr/local/bin/python /app/scripts/scrap_elsiglo.py >> /var/log/cron.log 2>&1
+# Tarea programada
+* * * * * root /app/run_scrap.sh >> /var/log/cron.log 2>&1
