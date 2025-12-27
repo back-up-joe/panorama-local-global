@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'scrap_db'),
         'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'Sant27'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Sant27#sanT'),
         'HOST': os.getenv('DB_HOST', 'db'), # Cambiado a 'db' para Docker
         'PORT': os.getenv('DB_PORT', '5432'),
     }
@@ -156,15 +156,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
-
-# Celery
-#CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', '')
-#CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', '')
-#CELERY_ACCEPT_CONTENT = ["json"]
-#CELERY_TASK_SERIALIZER = "json"
-#CELERY_RESULT_SERIALIZER = "json"
-#CELERY_TIMEZONE = "America/Santiago"
-#CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Logging
 LOGGING = {
