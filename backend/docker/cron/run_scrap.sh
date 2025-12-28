@@ -22,7 +22,7 @@ fi
 export DB_HOST=${DB_HOST:-db}
 export DB_NAME=${DB_NAME:-scrap_db}
 export DB_USER=${DB_USER:-postgres}
-export DB_PASSWORD=${DB_PASSWORD:-}
+export DB_PASSWORD=${DB_PASSWORD}
 export DB_PORT=${DB_PORT:-5432}
 export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-scraper.settings}
 
