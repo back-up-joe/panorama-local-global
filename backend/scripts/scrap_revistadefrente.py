@@ -42,79 +42,277 @@ def extraer_urls_secciones(driver):
     
     try:
         # Navegar a la página principal
-        driver.get("https://revistadefrente.cl/")
+        driver.get("https://www.revistadefrente.cl/")
         time.sleep(3)
         
-        # Buscar en featured-section
-        print("\nBuscando en 'edgtf-ni-content'...")
-        try:
-            edgtf_section = driver.find_element(By.CSS_SELECTOR, "div.edgtf-ni-content")
-            enlaces_edgtf = edgtf_section.find_elements(By.CSS_SELECTOR, "a[href*='https://revistadefrente.cl/']")
-            
-            for enlace in enlaces_edgtf:
-                try:
-                    href = enlace.get_attribute("href")
-                    if _es_url_noticia_valida(href, urls_noticias):
-                        urls_noticias.append(href)
-                        print(f"Encontrado en edgtf-ni-content: {href[:60]}...")
-                except:
-                    continue
-        except Exception as e:
-            print(f"No se pudo acceder a edgtf-ni-content: {e}")
+        # Hacer scroll para cargar contenido dinámico
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight/3);")
+        time.sleep(1)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
+        time.sleep(1)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
         
-        # Buscar en site-content pt-0
-        print("\nBuscando en 'site-content pt-0'...")
-        try:
-            site_content = driver.find_element(By.CSS_SELECTOR, "div.site-content.pt-0")
-            enlaces_content = site_content.find_elements(By.CSS_SELECTOR, "a[href*='https://revistadefrente.cl/']")
-            
-            for enlace in enlaces_content:
-                try:
-                    href = enlace.get_attribute("href")
-                    if _es_url_noticia_valida(href, urls_noticias):
-                        urls_noticias.append(href)
-                        print(f"Encontrado en site-content: {href[:60]}...")
-                except:
-                    continue
-        except Exception as e:
-            print(f"No se pudo acceder a site-content pt-0: {e}")
+        # Estrategia 1: Buscar en todos los enlaces de artículos
+        print("\nBuscando enlaces de artículos...")
         
-        # Eliminar duplicados manteniendo el orden
+        # Primero, obtener TODOS los enlaces de la página
+        todos_enlaces = driver.find_elements(By.TAG_NAME, "a")
+        print(f"Total de enlaces en la página: {len(todos_enlaces)}")
+        
+        for enlace in todos_enlaces:
+            try:
+                href = enlace.get_attribute("href")
+                if href and "revistadefrente.cl" in href:
+                    # Verificar si es un artículo (no página de categoría, tag, etc.)
+                    if (href not in urls_noticias and 
+                        not href.endswith('/') and  # Excluir páginas principales
+                        '#' not in href and  # Excluir anclas
+                        '?' not in href and  # Excluir URLs con parámetros
+                        '/category/' not in href and
+                        '/tag/' not in href and
+                        '/author/' not in href and
+                        'feed' not in href and
+                        'rss' not in href and
+                        '.xml' not in href and
+                        '.json' not in href and
+                        href != "https://www.revistadefrente.cl/" and
+                        href != "https://www.revistadefrente.cl/nacional/" and
+                        href != "https://www.revistadefrente.cl/internacional/" and
+                        href != "https://www.revistadefrente.cl/entrevistas/" and
+                        href != "https://www.revistadefrente.cl/memoria-popular/" and
+                        href != "https://www.revistadefrente.cl/cultura/" and
+                        'category/opinion-de-frente' not in href):
+                        
+                        # Verificar que tenga un patrón de fecha o sea un artículo
+                        import re
+                        # Patrones que indican que es un artículo
+                        patrones_articulo = [
+                            r'/\d{4}/\d{2}/',  # /2025/12/
+                            r'-\d+$',  # termina con número
+                            r'\.html$',  # termina con .html
+                        ]
+                        
+                        es_articulo = False
+                        for patron in patrones_articulo:
+                            if re.search(patron, href):
+                                es_articulo = True
+                                break
+                        
+                        # Si no tiene patrón claro, verificar por el texto del enlace
+                        if not es_articulo:
+                            texto = enlace.text.strip()
+                            # Si el texto del enlace es largo (más de 10 caracteres), probablemente sea un artículo
+                            if len(texto) > 10:
+                                es_articulo = True
+                        
+                        if es_articulo:
+                            urls_noticias.append(href)
+            except:
+                continue
+        
+        # Estrategia 2: Buscar específicamente en contenedores de noticias
+        print("\nBuscando en contenedores de noticias...")
+        
+        contenedores = [
+            ".edgtf-news-item",
+            ".edgtf-layout1-item",
+            ".edgtf-layout3-item", 
+            ".edgtf-layout7-item",
+            ".edgtf-layout8-item",
+            ".edgtf-post-carousel1 .edgtf-news-item",
+            ".edgtf-post-carousel3 .edgtf-news-item",
+            ".edgtf-post-carousel6 .edgtf-news-item",
+        ]
+        
+        for contenedor in contenedores:
+            try:
+                elementos = driver.find_elements(By.CSS_SELECTOR, contenedor)
+                for elemento in elementos:
+                    try:
+                        # Buscar enlaces dentro del elemento
+                        enlaces = elemento.find_elements(By.TAG_NAME, "a")
+                        for enlace in enlaces:
+                            try:
+                                href = enlace.get_attribute("href")
+                                if href and "revistadefrente.cl" in href and href not in urls_noticias:
+                                    # Filtro más simple
+                                    if ('/category/' not in href and 
+                                        '/tag/' not in href and 
+                                        '/author/' not in href and
+                                        '#' not in href and
+                                        '?' not in href):
+                                        urls_noticias.append(href)
+                            except:
+                                continue
+                    except:
+                        continue
+            except:
+                continue
+        
+        # Eliminar duplicados
         urls_noticias = list(dict.fromkeys(urls_noticias))
         
-        print(f"\nTotal de URLs encontradas en las secciones especificas: {len(urls_noticias)}")
+        print(f"\nURLs encontradas antes de filtrar: {len(urls_noticias)}")
+        
+        # Filtrar URLs para quedarnos solo con artículos
+        urls_filtradas = []
+        for url in urls_noticias:
+            try:
+                # Excluir URLs no deseadas
+                excluir = False
+                
+                # URLs específicas a excluir
+                urls_excluir = [
+                    "https://www.revistadefrente.cl/",
+                    "https://www.revistadefrente.cl/nacional/",
+                    "https://www.revistadefrente.cl/internacional/",
+                    "https://www.revistadefrente.cl/entrevistas/",
+                    "https://www.revistadefrente.cl/memoria-popular/",
+                    "https://www.revistadefrente.cl/cultura/",
+                    "https://www.revistadefrente.cl/category/opinion-de-frente/",
+                    "https://www.revistadefrente.cl/category/nacional/",
+                    "https://www.revistadefrente.cl/category/internacional/",
+                    "https://www.revistadefrente.cl/feed/",
+                    "https://www.revistadefrente.cl/comments/feed/",
+                    "https://www.revistadefrente.cl/wp-json/",
+                ]
+                
+                if url in urls_excluir:
+                    excluir = True
+                
+                # Patrones a excluir
+                patrones_excluir = [
+                    '/category/',
+                    '/tag/',
+                    '/author/',
+                    '/feed',
+                    '/rss',
+                    '/wp-',
+                    '.xml',
+                    '.json',
+                    '#',
+                    '?s=',
+                    'search=',
+                    '/page/',
+                    '/pagina/',
+                    '/archivo/',
+                    '/archive/',
+                ]
+                
+                if not excluir:
+                    for patron in patrones_excluir:
+                        if patron in url:
+                            excluir = True
+                            break
+                
+                # Incluir solo si no está excluida
+                if not excluir:
+                    # Verificar que parezca un artículo (no solo una página de mes)
+                    import re
+                    # Excluir páginas que son solo mes (como /2025/12/)
+                    if re.match(r'https://www\.revistadefrente\.cl/\d{4}/\d{2}/$', url):
+                        excluir = True
+                    
+                    # Incluir si tiene más segmentos después de la fecha
+                    if not excluir and re.match(r'https://www\.revistadefrente\.cl/\d{4}/\d{2}/.+', url):
+                        urls_filtradas.append(url)
+                    # O si tiene un formato de título (con guiones)
+                    elif not excluir and '-' in url and url.count('-') >= 2:
+                        urls_filtradas.append(url)
+                    # O si termina con número (ID de post)
+                    elif not excluir and re.search(r'/\d+$', url):
+                        urls_filtradas.append(url)
+            
+            except Exception as e:
+                print(f"Error procesando URL {url}: {e}")
+                continue
+        
+        urls_noticias = urls_filtradas
+        
+        print(f"\nTotal de URLs encontradas después de filtrar: {len(urls_noticias)}")
         
         # Mostrar las URLs encontradas
         if urls_noticias:
-            print("\nURLs encontradas:")
-            for i, url in enumerate(urls_noticias, 1):
+            print("\nPrimeras 20 URLs encontradas:")
+            for i, url in enumerate(urls_noticias[:20], 1):
+                print(f"{i}. {url}")
+            if len(urls_noticias) > 20:
+                print(f"... y {len(urls_noticias) - 20} más")
+        else:
+            print("No se encontraron URLs de artículos.")
+            
+            # Para debug
+            print("\n--- DEBUG: Mostrando algunas URLs encontradas antes de filtrar ---")
+            temp_urls = list(dict.fromkeys(urls_noticias))[:10]
+            for i, url in enumerate(temp_urls, 1):
                 print(f"{i}. {url}")
         
     except Exception as e:
-        print(f"Error al buscar enlaces en secciones especificas: {e}")
+        print(f"Error al buscar enlaces: {e}")
+        import traceback
+        traceback.print_exc()
     
     return urls_noticias
 
-def _es_url_noticia_valida(href, urls_existentes):
+def _es_url_noticia_valida(url, lista_existente):
     """
-    Valida si una URL es una noticia valida (igual que el script original)
-    Retorna: True si es valida, False en caso contrario
+    Verifica si una URL es válida para una noticia (versión simplificada)
     """
-    if not href:
+    if not url or url in lista_existente:
         return False
     
-    condiciones = [
-        href.startswith("https://elsiglo.cl/"),
-        not href.endswith((".jpg", ".png", ".gif")),
-        not "category" in href,
-        not "tag" in href,
-        not "author" in href,
-        not "page" in href,
-        href != "https://elsiglo.cl/",
-        href not in urls_existentes
+    if not url.startswith("https://www.revistadefrente.cl/"):
+        return False
+    
+    # Excluir URLs que no son artículos
+    excluir = [
+        '/category/',
+        '/tag/',
+        '/author/',
+        '?s=',
+        '#',
+        'feed',
+        'rss',
+        '.xml',
+        '.json',
+        '/wp-',
+        '/page/',
+        '/pagina/',
     ]
     
-    return all(condiciones)
+    for patron in excluir:
+        if patron in url:
+            return False
+    
+    # URLs específicas a excluir
+    urls_excluir = [
+        "https://www.revistadefrente.cl/",
+        "https://www.revistadefrente.cl/nacional/",
+        "https://www.revistadefrente.cl/internacional/",
+        "https://www.revistadefrente.cl/entrevistas/",
+        "https://www.revistadefrente.cl/memoria-popular/",
+        "https://www.revistadefrente.cl/cultura/",
+        "https://www.revistadefrente.cl/category/opinion-de-frente/",
+    ]
+    
+    if url in urls_excluir:
+        return False
+    
+    # Verificar que sea un artículo (tiene fecha en la URL o formato de título)
+    import re
+    
+    # Excluir páginas que son solo mes (como /2025/12/)
+    if re.match(r'https://www\.revistadefrente\.cl/\d{4}/\d{2}/$', url):
+        return False
+    
+    # Incluir si tiene formato de artículo
+    if (re.match(r'https://www\.revistadefrente\.cl/\d{4}/\d{2}/.+', url) or
+        ('-' in url and url.count('-') >= 2) or
+        re.search(r'/\d+$', url)):
+        return True
+    
+    return False
 
 def extraer_datos_noticia(driver, url):
     """
@@ -133,12 +331,13 @@ def extraer_datos_noticia(driver, url):
     }
     
     try:
+                
         driver.get(url)
         time.sleep(2)
         
         # Extraer titular
         datos['titular'] = _extraer_titular(driver)
-        
+
         # Extraer bajada (método mejorado del script original)
         datos['bajada'] = _extraer_bajada_original(driver)
         
@@ -165,59 +364,48 @@ def extraer_datos_noticia(driver, url):
 def _extraer_titular(driver):
     """Extrae el titular de la noticia"""
     try:
-        return driver.find_element(By.CSS_SELECTOR, "h1.entry-title").text.strip()
+        return driver.find_element(By.CSS_SELECTOR, "h2.entry-title").text.strip()
     except:
         try:
-            return driver.find_element(By.TAG_NAME, "h1").text.strip()
+            return driver.find_element(By.TAG_NAME, "h2").text.strip()
         except:
             return "No encontrado"
 
 def _extraer_bajada_original(driver):
-    """Extrae la bajada específicamente para elsiglo.cl (igual que el script original)"""
+    """Extrae la bajada específicamente para revistadefrente.cl - Extrae primer párrafo significativo del contenido"""
+    
+    # Primero intentar extraer el contenido completo
     try:
-        # Buscar el primer <p> dentro de un <blockquote> dentro de entry-content
-        entry_content = driver.find_element(By.CLASS_NAME, "entry-content")
+        contenido_info = _extraer_contenido(driver)
+        parrafos = contenido_info['parrafos']
         
-        # Estrategia 1: Buscar blockquote que contiene la bajada
-        blockquotes = entry_content.find_elements(By.TAG_NAME, "blockquote")
+        # Buscar el primer párrafo significativo del contenido
+        for parrafo in parrafos:
+            texto = parrafo.strip()
+            # Filtrar párrafos significativos (no demasiado cortos)
+            if len(texto) > 50:  # Ajustar este valor según sea necesario
+                return texto[:200] + "..." if len(texto) > 200 else texto
         
-        for blockquote in blockquotes:
-            # Buscar párrafos dentro del blockquote
-            parrafos = blockquote.find_elements(By.TAG_NAME, "p")
-            for p in parrafos:
-                texto = p.text.strip()
-                # Filtrar texto significativo
-                if len(texto) > 100:
-                    return texto
-        
-        # Estrategia 2: Si no hay blockquote, buscar el primer párrafo después de los divs sociales
-        divs_sociales = entry_content.find_elements(By.CSS_SELECTOR, "div.heateor_sss_sharing_container, div.social-share")
-        
-        if divs_sociales:
-            # Encontrar el primer elemento después del último div social
-            all_elements = entry_content.find_elements(By.XPATH, "./*")
-            last_social_index = -1
-            
-            for i, elem in enumerate(all_elements):
-                if any(cls in elem.get_attribute("class") for cls in ["heateor", "social"]):
-                    last_social_index = i
-            
-            if last_social_index != -1 and last_social_index + 1 < len(all_elements):
-                # Buscar el primer párrafo después del div social
-                for i in range(last_social_index + 1, len(all_elements)):
-                    elem = all_elements[i]
-                    if elem.tag_name == "p":
-                        texto = elem.text.strip()
-                        if len(texto) > 30:
-                            return texto
-    
     except Exception as e:
-        print(f"Error en estrategia principal de bajada: {e}")
+        print(f"Error al extraer bajada del contenido: {e}")
     
-    # Fallbacks
+    # Si no se encuentra en el contenido, intentar métodos alternativos
+    try:
+        # Intentar extraer el primer párrafo después del título principal
+        elementos = driver.find_elements(By.XPATH, "//div[contains(@class, 'edgtf-post-text-main')]//p")
+        
+        for p in elementos:
+            texto = p.text.strip()
+            if len(texto) > 50:
+                return texto[:200] + "..." if len(texto) > 200 else texto
+                
+    except Exception as e:
+        print(f"Error en método alternativo de bajada: {e}")
+    
+    # Fallbacks adicionales
     fallbacks = [
-        ("meta[name='description']", "content"),
         ("meta[property='og:description']", "content"),
+        ("meta[name='description']", "content"),
         ("meta[name='twitter:description']", "content")
     ]
     
@@ -226,27 +414,35 @@ def _extraer_bajada_original(driver):
             elem = driver.find_element(By.CSS_SELECTOR, selector)
             texto = elem.get_attribute(attr)
             if texto and len(texto.strip()) > 20:
-                return texto.strip()
+                return texto.strip()[:200] + "..." if len(texto.strip()) > 200 else texto.strip()
         except:
             continue
     
     return "No encontrada"
-
+                
 def _extraer_imagen(driver):
     """Extrae la URL de la imagen principal"""
     try:
+        # 1. Primera prioridad: meta tag og:image (Open Graph)
         return driver.find_element(By.CSS_SELECTOR, "meta[property='og:image']").get_attribute("content")
     except:
         try:
+            # 2. Segunda prioridad: wp-post-image (clase específica de WordPress)
             return driver.find_element(By.CSS_SELECTOR, ".wp-post-image").get_attribute("src")
         except:
             try:
-                return driver.find_element(By.CSS_SELECTOR, "img.size-full").get_attribute("src")
+                # 3. Tercera prioridad: img dentro del contenedor principal del post
+                return driver.find_element(By.CSS_SELECTOR, ".edgtf-post-content .edgtf-post-image img").get_attribute("src")
             except:
                 try:
-                    return driver.find_element(By.CSS_SELECTOR, "article img").get_attribute("src")
+                    # 4. Cuarta prioridad: imagen con clase size-full
+                    return driver.find_element(By.CSS_SELECTOR, "img.size-full").get_attribute("src")
                 except:
-                    return ""
+                    try:
+                        # 5. Quinta prioridad: cualquier imagen dentro de article
+                        return driver.find_element(By.CSS_SELECTOR, "article img").get_attribute("src")
+                    except:
+                        return ""
 
 def _extraer_contenido(driver):
     """Extrae el contenido de la noticia"""
@@ -254,7 +450,7 @@ def _extraer_contenido(driver):
     total = 0
     
     try:
-        contenido_div = driver.find_element(By.CSS_SELECTOR, "div.entry-content")
+        contenido_div = driver.find_element(By.CSS_SELECTOR, "div.edgtf-post-text-main")
         elementos_parrafo = contenido_div.find_elements(By.TAG_NAME, "p")
         total = len(elementos_parrafo)
         
@@ -271,10 +467,11 @@ def _extraer_contenido(driver):
 def _extraer_categoria(driver):
     """Extrae la categoria de la noticia"""
     try:
-        return driver.find_element(By.CSS_SELECTOR, ".cat-links a").text
+        return driver.find_element(By.CSS_SELECTOR, ".edgtf-post-info-category a").text
     except:
-        return "General"
+        return "."
 
+'''
 def _extraer_fecha_autor(driver):
     """Extrae fecha y autor de la noticia"""
     fecha = "No encontrada"
@@ -296,6 +493,55 @@ def _extraer_fecha_autor(driver):
             autor = driver.find_element(By.CSS_SELECTOR, ".entry-meta .by-author a").text
         except:
             pass
+    
+    return {'fecha': fecha, 'autor': autor}
+    '''
+def _extraer_fecha_autor(driver):
+    """Extrae fecha y autor de la noticia"""
+    fecha = "No encontrada"
+    autor = "No encontrado"
+    
+    try:
+        # Para este sitio específico, primero intentamos los selectores del tema Journo
+        # 1. Autor: dentro de .edgtf-post-info-author
+        autor_element = driver.find_element(By.CSS_SELECTOR, ".edgtf-post-info-author")
+        # Extraemos solo el texto del enlace (nombre del autor)
+        autor_link = autor_element.find_element(By.CSS_SELECTOR, "a")
+        autor = autor_link.text
+        
+        # 2. Fecha: dentro de .edgtf-post-info-date
+        fecha_element = driver.find_element(By.CSS_SELECTOR, ".edgtf-post-info-date")
+        # Extraemos el texto del enlace de fecha
+        fecha_link = fecha_element.find_element(By.CSS_SELECTOR, "a")
+        fecha = fecha_link.text
+        
+    except Exception as e:
+        print(f"Error al extraer fecha/autor con selectores principales: {e}")
+        
+        # Intentar métodos alternativos
+        try:
+            # Método 1: Buscar por itemprop
+            autor = driver.find_element(By.CSS_SELECTOR, "[itemprop='author'] a").text
+        except:
+            try:
+                # Método 2: Buscar por texto "Por"
+                autor = driver.find_element(By.XPATH, "//div[contains(@class, 'edgtf-post-info-author')]//a").text
+            except:
+                pass
+        
+        try:
+            # Método 1 para fecha: buscar por itemprop='dateCreated'
+            fecha = driver.find_element(By.CSS_SELECTOR, "[itemprop='dateCreated'] a").text
+        except:
+            try:
+                # Método 2: Buscar por clase que contenga 'date'
+                fecha = driver.find_element(By.XPATH, "//div[contains(@class, 'edgtf-post-info-date')]//a").text
+            except:
+                try:
+                    # Método 3: Buscar en meta tags
+                    fecha = driver.find_element(By.CSS_SELECTOR, "meta[property='article:published_time']").get_attribute("content")
+                except:
+                    pass
     
     return {'fecha': fecha, 'autor': autor}
 
@@ -336,7 +582,7 @@ def ejecutar_scraping(max_noticias=10):
     
     try:
         print("\n" + "="*80)
-        print("SCRAPING DE ELSIGLO.CL")
+        print("SCRAPING DE REVISTADEFRENTE.CL")
         print("="*80)
         
         # Configurar driver
@@ -346,7 +592,7 @@ def ejecutar_scraping(max_noticias=10):
         urls = extraer_urls_secciones(driver)
         
         if not urls:
-            print("No se encontraron URLs de noticias en las secciones especificadas")
+            print("No se encontraron URLs de noticias")
             return 0
         
         print(f"\nProcesando las primeras {min(max_noticias, len(urls))} noticias...")

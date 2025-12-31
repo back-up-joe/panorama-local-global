@@ -273,7 +273,7 @@ def _extraer_categoria(driver):
     try:
         return driver.find_element(By.CSS_SELECTOR, ".cat-links a").text
     except:
-        return "General"
+        return "."
 
 def _extraer_fecha_autor(driver):
     """Extrae fecha y autor de la noticia"""
