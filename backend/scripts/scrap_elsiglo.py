@@ -380,8 +380,20 @@ def ejecutar_scraping(max_noticias=10):
             driver.quit()
             print("\nWebDriver cerrado.")
 
+def run():
+    cantidad = ejecutar_scraping(max_noticias=10)
+    print(f"\n{'='*80}")
+    print(f"SCRAPING COMPLETADO")
+    print(f"Artículos procesados: {cantidad}")
+    
+    # Mostrar estadísticas
+    total = Article.objects.count()
+    print(f"Total en base de datos: {total}")
+    print(f"{'='*80}")
+
 if __name__ == "__main__":
     # Ejecutar desde línea de comandos
+    '''
     cantidad = ejecutar_scraping(max_noticias=10)
     print(f"\n{'='*80}")
     print(f"SCRAPING COMPLETADO")
@@ -392,3 +404,5 @@ if __name__ == "__main__":
     total = Article.objects.count()
     print(f"Total en base de datos: {total}")
     print(f"{'='*80}")
+    '''
+    run()

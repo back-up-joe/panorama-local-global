@@ -471,31 +471,6 @@ def _extraer_categoria(driver):
     except:
         return "."
 
-'''
-def _extraer_fecha_autor(driver):
-    """Extrae fecha y autor de la noticia"""
-    fecha = "No encontrada"
-    autor = "No encontrado"
-    
-    try:
-        # Selectores más específicos para evitar conflictos
-        fecha = driver.find_element(By.CSS_SELECTOR, "header.entry-header .date a").text
-        autor = driver.find_element(By.CSS_SELECTOR, "header.entry-header .by-author a").text
-    except Exception as e:
-        print(f"Error al extraer fecha/autor: {e}")
-        # Intentar otros selectores si los principales fallan
-        try:
-            fecha = driver.find_element(By.CSS_SELECTOR, ".entry-meta .date a").text
-        except:
-            pass
-        
-        try:
-            autor = driver.find_element(By.CSS_SELECTOR, ".entry-meta .by-author a").text
-        except:
-            pass
-    
-    return {'fecha': fecha, 'autor': autor}
-    '''
 def _extraer_fecha_autor(driver):
     """Extrae fecha y autor de la noticia"""
     fecha = "No encontrada"
@@ -626,8 +601,7 @@ def ejecutar_scraping(max_noticias=10):
             driver.quit()
             print("\nWebDriver cerrado.")
 
-if __name__ == "__main__":
-    # Ejecutar desde línea de comandos
+def run():
     cantidad = ejecutar_scraping(max_noticias=10)
     print(f"\n{'='*80}")
     print(f"SCRAPING COMPLETADO")
@@ -638,3 +612,19 @@ if __name__ == "__main__":
     total = Article.objects.count()
     print(f"Total en base de datos: {total}")
     print(f"{'='*80}")
+
+if __name__ == "__main__":
+    # Ejecutar desde línea de comandos
+    '''
+    cantidad = ejecutar_scraping(max_noticias=10)
+    print(f"\n{'='*80}")
+    print(f"SCRAPING COMPLETADO")
+    print(f"Artículos procesados: {cantidad}")
+    
+    # Mostrar estadísticas
+    from news.models import Article
+    total = Article.objects.count()
+    print(f"Total en base de datos: {total}")
+    print(f"{'='*80}")
+    '''
+    run()

@@ -34,3 +34,4 @@ class StatsSerializer(serializers.Serializer):
     articles_by_category = serializers.DictField()
     last_scrape = serializers.DateTimeField(allow_null=True)
     articles_last_24h = serializers.IntegerField()
+    

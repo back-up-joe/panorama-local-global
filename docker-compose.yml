@@ -19,14 +19,24 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - db
+
   backend:
     build: ./backend
     container_name: django_backend
     command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn scraper.wsgi:application --bind 0.0.0.0:8000"
+      sh -c "gunicorn scraper.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend:/app
       - static_volume:/app/staticfiles
@@ -34,8 +44,10 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - redis
+      - celery
+      - beat
     env_file:
       - .env
     environment:
@@ -47,6 +59,64 @@ services:
       TZ: America/Santiago
       DJANGO_SETTINGS_MODULE: scraper.settings
       PYTHONUNBUFFERED: 1
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  celery:
+    build: ./backend
+    container_name: celery_worker
+    command: sh -c "celery -A scraper worker --loglevel=INFO -Q default,scraper"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: scraper.settings
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+      - redis
+      - beat
+
+  beat:
+    build: ./backend
+    # Usamos el scheduler de la base de datos de django-celery-beat
+    command: sh -c "
+            python manage.py makemigrations &&
+            python manage.py migrate &&
+            python manage.py collectstatic --noinput &&
+            celery -A scraper beat --loglevel=INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    container_name: celery_beat
+    env_file:
+    - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: scraper.settings
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build: ./frontend

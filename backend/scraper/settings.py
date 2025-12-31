@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    # 'django_celery_beat',
+    'django_celery_beat',
     'django_filters',
     'news',
 ]
@@ -177,3 +177,12 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# Redis como broker y backend
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/1')
+CELERY_TIMEZONE = 'America/Santiago'
+CELERY_ENABLE_UTC = False
+CELERY_TASK_TRACK_STARTED = True
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_DEFAULT_QUEUE = 'default'
