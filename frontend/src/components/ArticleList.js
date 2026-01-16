@@ -18,29 +18,29 @@ const ArticleList = () => {
       setLoading(true);
       setError(null);
 
-      console.log("🔄 Iniciando fetchArticles...");
+      console.log("Iniciando fetchArticles...");
       const data = await articleService.getArticles();
-      console.log("📦 Data recibida:", data);
+      console.log("Data recibida:", data);
 
-      // Tu API devuelve un objeto con paginación
+      // La API devuelve un objeto con paginación
       // La propiedad "results" contiene los artículos
       if (data && data.results && Array.isArray(data.results)) {
         console.log(
-          `✅ Recibidos ${data.results.length} artículos de ${data.count} totales`
+          `Recibidos ${data.results.length} artículos de ${data.count} totales`
         );
         setArticles(data.results);
         setTotalArticles(data.count || data.results.length);
       } else if (Array.isArray(data)) {
         // Por si acaso en algún momento devuelve array directo
-        console.log(`✅ Recibidos ${data.length} artículos`);
+        console.log(`Recibidos ${data.length} artículos`);
         setArticles(data);
         setTotalArticles(data.length);
       } else {
-        console.error("❌ Formato de datos inesperado:", data);
+        console.error("Formato de datos inesperado:", data);
         setError("Formato de datos incorrecto recibido de la API");
       }
     } catch (err) {
-      console.error("💥 Error en fetchArticles:", err);
+      console.error("Error en fetchArticles:", err);
       const errorMsg = err.message || "Error desconocido";
       const status = err.response?.status || "N/A";
       setError(`Error ${status}: ${errorMsg}`);
@@ -191,7 +191,7 @@ const ArticleList = () => {
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src =
-                        "https://via.placeholder.com/400x200/007bff/ffffff?text=Sin+Imagen";
+                        "";
                     }}
                   />
                 ) : (

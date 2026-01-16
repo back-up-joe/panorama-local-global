@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Configura la URL base de tu API Django
+// Configura la URL base de API Django
 const API_BASE_URL = 'http://localhost:8000/api';
 
 const api = axios.create({

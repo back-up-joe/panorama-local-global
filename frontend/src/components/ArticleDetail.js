@@ -67,7 +67,7 @@ const ArticleDetail = () => {
       {/* Botón volver */}
       <div className="mb-4">
         <Link to="/" className="btn btn-outline-primary">
-          ← Volver a noticias
+          Volver a noticias
         </Link>
       </div>
 
@@ -109,7 +109,7 @@ const ArticleDetail = () => {
             style={{ maxHeight: '500px', width: 'auto', maxWidth: '100%' }}
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/800x400/007bff/ffffff?text=Sin+Imagen';
+              e.target.src = '';
             }}
           />
           <p className="text-muted mt-2 small">
@@ -191,13 +191,13 @@ const ArticleDetail = () => {
       {/* Botones de navegación */}
       <div className="d-flex justify-content-between mb-5">
         <Link to="/" className="btn btn-outline-primary">
-          ← Volver a todas las noticias
+          Volver a todas las noticias
         </Link>
         <button 
           className="btn btn-outline-secondary"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          ↑ Volver arriba
+          Volver arriba
         </button>
       </div>
     </div>
