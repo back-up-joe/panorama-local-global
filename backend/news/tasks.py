@@ -60,6 +60,64 @@ def scrap_revistadefrente(self, max_articles=15):
         print(f"Error en scraping: {e}")
         # Reintentar después de 5 minutos
         raise self.retry(exc=e, countdown=300)
+    
+@shared_task(bind=True, max_retries=3)
+def scrap_rebelion(self, max_articles=15):
+    """
+    Tarea principal de scraping
+    """
+    try:
+        print(f"[{timezone.now()}] Iniciando scraping de Rebelion.org...")
+
+        # Agregar directorio scripts al path
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+
+        # Importar y ejecutar scraping
+        from scripts.scrap_rebelion import ejecutar_scraping
+
+        procesadas = ejecutar_scraping(max_noticias=max_articles)
+
+        return {
+            'status': 'success',
+            'task': 'scrap_rebelion',
+            'articles_processed': procesadas,
+            'timestamp': timezone.now().isoformat(),
+            'message': f'Procesadas {procesadas} noticias'
+        }
+
+    except Exception as e:
+        print(f"Error en scraping: {e}")
+        # Reintentar después de 5 minutos
+        raise self.retry(exc=e, countdown=300)
+
+@shared_task(bind=True, max_retries=3)
+def scrap_radiouchile(self, max_articles=15):
+    """
+    Tarea principal de scraping
+    """
+    try:
+        print(f"[{timezone.now()}] Iniciando scraping de Radio UChile...")
+
+        # Agregar directorio scripts al path
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+
+        # Importar y ejecutar scraping
+        from scripts.scrap_radiouchile.py import ejecutar_scraping
+
+        procesadas = ejecutar_scraping(max_noticias=max_articles)
+
+        return {
+            'status': 'success',
+            'task': 'scrap_radiouchile',
+            'articles_processed': procesadas,
+            'timestamp': timezone.now().isoformat(),
+            'message': f'Procesadas {procesadas} noticias'
+        }
+
+    except Exception as e:
+        print(f"Error en scraping: {e}")
+        # Reintentar después de 5 minutos
+        raise self.retry(exc=e, countdown=300)
 
 @shared_task
 def limpiar_articulos_antiguos(dias=30):
