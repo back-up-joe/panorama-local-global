@@ -45,6 +45,7 @@ def configurar_driver():
     
     return driver
 
+'''
 def extraer_urls_secciones(driver):
     """
     Extrae URLs de noticias de radio.uchile.cl basado en la estructura HTML proporcionada
@@ -186,6 +187,147 @@ def extraer_urls_secciones(driver):
         traceback.print_exc()
     
     return urls_noticias
+''' 
+
+def extraer_urls_secciones(driver):
+    """
+    Extrae URLs de noticias de radio.uchile.cl basado en la estructura HTML proporcionada
+    Retorna: lista de URLs
+    """
+    print("Buscando enlaces de noticias en radio.uchile.cl...")
+    
+    urls_noticias = []
+    
+    try:
+        # Navegar a la página principal
+        driver.get("https://radio.uchile.cl/")
+        time.sleep(3)
+        
+        # Esperar a que cargue el contenido
+        wait = WebDriverWait(driver, 10)
+        
+        # Hacer scroll para cargar contenido dinámico
+        scroll_pauses = [0.5, 0.8, 1, 1.2]
+        for i, pause in enumerate(scroll_pauses):
+            driver.execute_script(f"window.scrollTo(0, document.body.scrollHeight * {(i+1)/len(scroll_pauses)});")
+            time.sleep(pause)
+        
+        print("\nAnalizando estructura de la página...")
+        
+        # Estrategia principal: Buscar TODOS los enlaces y filtrar los que sean artículos
+        print("Buscando todos los enlaces de artículos...")
+        try:
+            # Buscar todos los enlaces en la página
+            all_links = driver.find_elements(By.TAG_NAME, "a")
+            print(f"Total de enlaces encontrados: {len(all_links)}")
+            
+            for link in all_links:
+                try:
+                    href = link.get_attribute("href")
+                    if href and 'radio.uchile.cl' in href:
+                        # Patrón más flexible para artículos
+                        if re.search(r'/\d{4}/\d{2}/\d{2}/', href):  # Patrón de fecha: /2026/01/15/
+                            # Excluir URLs no deseadas
+                            if not any(excluir in href for excluir in [
+                                '/tag/', '/category/', '/author/', '/temas/',
+                                '?s=', '#comment', '/programacion', '/programas',
+                                '/senal-en-vivo', '/cartas-al-director/',
+                                '/opiniones/', '/cultura/', '/deportes/',
+                                '/internacional/', '/universidad_radio/',
+                                '/columnas/', '/buscar', '/sitemap',
+                                '/feed/', '/wp-admin/', '/wp-content/',
+                                '/wp-json/', '/xmlrpc.php'
+                            ]):
+                                if href not in urls_noticias:
+                                    urls_noticias.append(href)
+                                    print(f"  Artículo encontrado: {href}")
+                except Exception as e:
+                    continue
+                    
+        except Exception as e:
+            print(f"Error al buscar todos los enlaces: {e}")
+        
+        # Estrategia específica para la sección hero (noticias principales)
+        print("\nBuscando en sección hero...")
+        try:
+            # Buscar en la sección #hero específicamente
+            hero_section = driver.find_elements(By.CSS_SELECTOR, "#hero a")
+            for enlace in hero_section:
+                try:
+                    href = enlace.get_attribute("href")
+                    if href and re.search(r'/\d{4}/\d{2}/\d{2}/', href):
+                        if href not in urls_noticias:
+                            urls_noticias.append(href)
+                            print(f"  Encontrado en hero: {href}")
+                except:
+                    continue
+        except Exception as e:
+            print(f"Error en sección hero: {e}")
+        
+        # Estrategia: Buscar en los posts principales
+        print("\nBuscando posts principales...")
+        selectores_posts = [
+            ".post.featured-post-lg a",
+            ".post-title a",
+            ".title-secondary a",
+            "h2 a", "h3 a", "h4 a", "h5 a",
+            ".thumb.rounded a"
+        ]
+        
+        for selector in selectores_posts:
+            try:
+                elementos = driver.find_elements(By.CSS_SELECTOR, selector)
+                print(f"  Selector '{selector}': {len(elementos)} elementos")
+                
+                for elemento in elementos:
+                    try:
+                        href = elemento.get_attribute("href")
+                        if href and 'radio.uchile.cl' in href:
+                            if re.search(r'/\d{4}/\d{2}/\d{2}/', href):
+                                if href not in urls_noticias:
+                                    urls_noticias.append(href)
+                    except:
+                        continue
+            except Exception as e:
+                print(f"  Error con selector '{selector}': {e}")
+        
+        # Filtrar y ordenar URLs
+        urls_filtradas = []
+        for url in urls_noticias:
+            # Asegurar que sea una URL de artículo
+            if re.search(r'/\d{4}/\d{2}/\d{2}/', url):
+                # Limpiar parámetros de la URL
+                url_limpia = url.split('?')[0] if '?' in url else url
+                if url_limpia not in urls_filtradas:
+                    urls_filtradas.append(url_limpia)
+        
+        # Ordenar por fecha (más recientes primero)
+        def extraer_fecha_url(url):
+            match = re.search(r'/(\d{4})/(\d{2})/(\d{2})/', url)
+            if match:
+                return match.group(1), match.group(2), match.group(3)
+            return ('0000', '00', '00')
+        
+        urls_filtradas.sort(key=extraer_fecha_url, reverse=True)
+        
+        print(f"\nTotal de URLs de artículos encontradas: {len(urls_filtradas)}")
+        
+        # Mostrar algunas URLs para debug
+        if urls_filtradas:
+            print("\nPrimeras 15 URLs encontradas:")
+            for i, url in enumerate(urls_filtradas[:15], 1):
+                print(f"{i}. {url}")
+            if len(urls_filtradas) > 15:
+                print(f"... y {len(urls_filtradas) - 15} más")
+        else:
+            print("No se encontraron URLs de artículos.")
+            
+    except Exception as e:
+        print(f"Error al buscar enlaces: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    return urls_filtradas
 
 def extraer_datos_noticia(driver, url):
     """
@@ -538,6 +680,7 @@ def _parsear_fecha(fecha_str: str) -> date | None:
 
     return None
 
+'''
 def _extraer_fecha_autor_uchile(driver):
     """Extrae fecha y autor de la noticia en radio.uchile.cl"""
     fecha = None
@@ -601,7 +744,132 @@ def _extraer_fecha_autor_uchile(driver):
         'fecha': fecha,   # datetime.date | None
         'autor': autor
     }
+'''
 
+def _extraer_fecha_autor_uchile(driver):
+    """Extrae fecha y autor de la noticia en radio.uchile.cl"""
+    fecha_raw = None
+    autor = "No encontrado"
+
+    # Estrategia 1: Buscar en el post-header (según HTML de ejemplo)
+    try:
+        # Buscar el post-header
+        post_header = driver.find_element(By.CSS_SELECTOR, ".post-header")
+        
+        # Buscar elementos li dentro del meta
+        meta_items = post_header.find_elements(By.CSS_SELECTOR, "ul.meta li")
+        
+        if len(meta_items) >= 2:
+            # Primer li es autor
+            autor_elem = meta_items[0].find_element(By.TAG_NAME, "a")
+            if autor_elem:
+                autor = autor_elem.text.strip()
+                if not autor or autor == "":
+                    autor = meta_items[0].text.strip()
+            
+            # Segundo li es fecha (o buscar fecha en cualquier li)
+            for item in meta_items:
+                texto = item.text.strip()
+                # Buscar patrones de fecha
+                if re.search(r'\d{2}-\d{2}-\d{4}', texto) or re.search(r'\d{2}/\d{2}/\d{4}', texto):
+                    fecha_raw = texto
+                    break
+            
+            # Si no encontramos fecha en los li, buscar directamente
+            if not fecha_raw and len(meta_items) >= 2:
+                fecha_raw = meta_items[1].text.strip()
+                
+    except Exception as e:
+        print(f"  Error en post-header: {e}")
+        pass
+
+    # Estrategia 2: Buscar fecha en elementos strong dentro del post-header
+    if not fecha_raw:
+        try:
+            strong_elements = driver.find_elements(By.CSS_SELECTOR, ".post-header strong")
+            for elem in strong_elements:
+                texto = elem.text.strip()
+                if re.search(r'\d{2}-\d{2}-\d{4}', texto):
+                    fecha_raw = texto
+                    break
+        except:
+            pass
+
+    # Estrategia 3: Buscar en JSON-LD
+    if not fecha_raw:
+        try:
+            scripts = driver.find_elements(By.TAG_NAME, "script")
+            for script in scripts:
+                if script.get_attribute("type") == "application/ld+json":
+                    try:
+                        data = json.loads(script.get_attribute("innerHTML"))
+                        if isinstance(data, dict):
+                            if 'datePublished' in data:
+                                fecha_raw = data['datePublished']
+                                # Convertir formato ISO a legible
+                                if 'T' in fecha_raw:
+                                    fecha_raw = fecha_raw.split('T')[0]
+                            if 'author' in data and autor == "No encontrado":
+                                if isinstance(data['author'], dict):
+                                    autor = data['author'].get('name', autor)
+                    except:
+                        continue
+        except:
+            pass
+
+    # Estrategia 4: Buscar en meta tags
+    if not fecha_raw:
+        try:
+            fecha_raw = driver.find_element(
+                By.CSS_SELECTOR,
+                "meta[property='article:published_time']"
+            ).get_attribute("content")
+            if 'T' in fecha_raw:
+                fecha_raw = fecha_raw.split('T')[0]
+        except:
+            pass
+    
+    # Estrategia 5: Buscar cualquier elemento con patrón de fecha
+    if not fecha_raw:
+        try:
+            # Buscar en todo el body
+            body_text = driver.find_element(By.TAG_NAME, "body").text
+            # Buscar patrones de fecha comunes
+            fecha_patterns = [
+                r'\d{2}-\d{2}-\d{4}',  # 17-01-2026
+                r'\d{2}/\d{2}/\d{4}',   # 17/01/2026
+                r'\d{4}-\d{2}-\d{2}',   # 2026-01-17
+            ]
+            for pattern in fecha_patterns:
+                match = re.search(pattern, body_text)
+                if match:
+                    fecha_raw = match.group(0)
+                    break
+        except:
+            pass
+
+    # Limpieza del string de fecha
+    if fecha_raw:
+        fecha_raw = (
+            fecha_raw
+            .replace("Publicado:", "")
+            .replace("Actualizado:", "")
+            .replace("Publicado", "")
+            .replace("Actualizado", "")
+            .strip()
+        )
+    
+    # Parsear fecha
+    fecha = _parsear_fecha(fecha_raw) if fecha_raw else None
+
+    # Si no se encontró autor, usar valor por defecto
+    if autor == "No encontrado" or not autor:
+        autor = "Diario UCHILE"
+
+    return {
+        'fecha': fecha,   # datetime.date | None
+        'autor': autor
+    }
 
 ######################################################################################################################
 
