@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from scripts.scrap_radiouchile.py import run
+from scripts.scrap_radiouchile import run
 
 class Command(BaseCommand):
     help = "Scrapea Radio UChile y puebla la base de datos"

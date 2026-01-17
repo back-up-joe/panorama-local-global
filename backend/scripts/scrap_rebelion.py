@@ -288,6 +288,7 @@ def _extraer_categoria(driver):
     
     return "No encontrada"
 
+'''
 def _extraer_fecha_autor(driver):
     """Extrae fecha y autor de la noticia en rebelion.org"""
     fecha = "No encontrada"
@@ -362,7 +363,126 @@ def _extraer_fecha_autor(driver):
     except Exception as e:
         print(f"Error al extraer fecha/autor: {e}")
     
-    return {'fecha': fecha, 'autor': autor}
+    return {'fecha': fecha, 'autor': autor} '''
+
+#######################################################################################################
+
+from datetime import datetime, date
+import re
+
+MESES_ES = {
+    "enero": 1,
+    "febrero": 2,
+    "marzo": 3,
+    "abril": 4,
+    "mayo": 5,
+    "junio": 6,
+    "julio": 7,
+    "agosto": 8,
+    "septiembre": 9,
+    "octubre": 10,
+    "noviembre": 11,
+    "diciembre": 12,
+}
+
+def _parsear_fecha(fecha_str: str) -> date | None:
+    if not fecha_str:
+        return None
+
+    fecha_str = fecha_str.strip().lower()
+
+    # Formatos ISO: 2026-01-15
+    try:
+        return datetime.strptime(fecha_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+
+    # Formato: 16/01/2026
+    try:
+        return datetime.strptime(fecha_str, "%d/%m/%Y").date()
+    except ValueError:
+        pass
+
+    # Formato: 13 enero, 2026
+    m = re.match(r"(\d{1,2})\s+([a-záéíóú]+),?\s+(\d{4})", fecha_str)
+    if m:
+        dia, mes, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    # Formato: enero 13, 2026
+    m = re.match(r"([a-záéíóú]+)\s+(\d{1,2}),?\s+(\d{4})", fecha_str)
+    if m:
+        mes, dia, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    return None
+
+def _extraer_fecha_autor(driver):
+    """Extrae fecha y autor de la noticia en rebelion.org"""
+    fecha = None
+    autor = "No encontrado"
+    fecha_raw = None
+
+    try:
+        # PATRÓN PRINCIPAL
+        try:
+            entry_meta = driver.find_element(By.CSS_SELECTOR, ".entry-meta.big")
+            texto_meta = entry_meta.text
+
+            # Autor
+            if "Por " in texto_meta:
+                partes = texto_meta.split("Por ")
+                if len(partes) > 1:
+                    autor = partes[1].split(" | ")[0].strip()
+
+            # Fecha dd/mm/yyyy
+            fecha_match = re.search(r'\d{1,2}/\d{1,2}/\d{4}', texto_meta)
+            if fecha_match:
+                fecha_raw = fecha_match.group(0)
+
+        except:
+            # PATRÓN SECUNDARIO
+            try:
+                entry_meta = driver.find_element(By.CSS_SELECTOR, ".entry-meta")
+
+                try:
+                    autor_elem = entry_meta.find_element(By.CSS_SELECTOR, ".author a, .author")
+                    autor = autor_elem.text.strip()
+                except:
+                    pass
+
+                try:
+                    fecha_elem = entry_meta.find_element(By.CSS_SELECTOR, ".date, time")
+                    fecha_raw = fecha_elem.text.strip()
+                except:
+                    fecha_match = re.search(r'\d{1,2}/\d{1,2}/\d{4}', entry_meta.text)
+                    if fecha_match:
+                        fecha_raw = fecha_match.group(0)
+
+            except:
+                # ÚLTIMO RECURSO
+                try:
+                    fecha_elems = driver.find_elements(By.CSS_SELECTOR, "time, .date, .published")
+                    for elem in fecha_elems:
+                        texto = elem.text.strip()
+                        if re.search(r'\d{1,2}/\d{1,2}/\d{4}', texto):
+                            fecha_raw = texto
+                            break
+                except:
+                    pass
+
+    except Exception as e:
+        print(f"Error al extraer fecha/autor: {e}")
+
+    # USAR EL PARSER AQUÍ
+    fecha = _parsear_fecha(fecha_raw)
+
+    return {
+        'fecha': fecha,   # datetime.date | None
+        'autor': autor
+    }
+
+#######################################################################################################
 
 def guardar_en_db(datos):
     """Guardar datos en la base de datos"""

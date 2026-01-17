@@ -4,7 +4,7 @@ import sys
 import os
 
 @shared_task(bind=True, max_retries=3)
-def scrap_elsiglo(self, max_articles=15):
+def scrap_elsiglo(self, max_articles=5):
     """
     Tarea principal de scraping
     """
@@ -33,7 +33,7 @@ def scrap_elsiglo(self, max_articles=15):
         raise self.retry(exc=e, countdown=300)
     
 @shared_task(bind=True, max_retries=3)
-def scrap_revistadefrente(self, max_articles=15):
+def scrap_revistadefrente(self, max_articles=5):
     """
     Tarea principal de scraping
     """
@@ -62,7 +62,7 @@ def scrap_revistadefrente(self, max_articles=15):
         raise self.retry(exc=e, countdown=300)
     
 @shared_task(bind=True, max_retries=3)
-def scrap_rebelion(self, max_articles=15):
+def scrap_rebelion(self, max_articles=5):
     """
     Tarea principal de scraping
     """
@@ -91,7 +91,7 @@ def scrap_rebelion(self, max_articles=15):
         raise self.retry(exc=e, countdown=300)
 
 @shared_task(bind=True, max_retries=3)
-def scrap_radiouchile(self, max_articles=15):
+def scrap_radiouchile(self, max_articles=5):
     """
     Tarea principal de scraping
     """
@@ -102,7 +102,7 @@ def scrap_radiouchile(self, max_articles=15):
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 
         # Importar y ejecutar scraping
-        from scripts.scrap_radiouchile.py import ejecutar_scraping
+        from scripts.scrap_radiouchile import ejecutar_scraping
 
         procesadas = ejecutar_scraping(max_noticias=max_articles)
 

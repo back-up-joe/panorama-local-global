@@ -8,7 +8,10 @@ class Article(models.Model):
     image_url = models.URLField(max_length=500, verbose_name="URL Imagen")
     content = models.JSONField(default=list, verbose_name="Contenido")
     paragraphs_count = models.IntegerField(default=0, verbose_name="Nº Párrafos")
-    publication_date = models.CharField(max_length=100, verbose_name="Fecha Publicación")
+    
+    # publication_date = models.CharField(max_length=100, verbose_name="Fecha Publicación")
+    publication_date = models.DateField(null=True, blank=True, verbose_name="Fecha Publicación")
+
     author = models.CharField(max_length=200, verbose_name="Autor")
     category = models.CharField(max_length=200, verbose_name="Categoría")
     scraped_at = models.DateTimeField(default=timezone.now, verbose_name="Fecha Extracción")

@@ -431,6 +431,7 @@ def _extraer_tags_contenido(driver):
         pass
     return None
 
+'''
 def _extraer_fecha_autor_uchile(driver):
     """Extrae fecha y autor de la noticia en radio.uchile.cl"""
     fecha = "No encontrada"
@@ -483,7 +484,126 @@ def _extraer_fecha_autor_uchile(driver):
     # Limpiar y formatear
     fecha = fecha.replace("Publicado:", "").replace("Actualizado:", "").strip()
     
-    return {'fecha': fecha, 'autor': autor}
+    return {'fecha': fecha, 'autor': autor} '''
+
+######################################################################################################################
+
+from datetime import datetime, date
+import re
+
+MESES_ES = {
+    "enero": 1,
+    "febrero": 2,
+    "marzo": 3,
+    "abril": 4,
+    "mayo": 5,
+    "junio": 6,
+    "julio": 7,
+    "agosto": 8,
+    "septiembre": 9,
+    "octubre": 10,
+    "noviembre": 11,
+    "diciembre": 12,
+}
+
+def _parsear_fecha(fecha_str: str) -> date | None:
+    if not fecha_str:
+        return None
+
+    fecha_str = fecha_str.strip().lower()
+
+    # Formatos ISO: 2026-01-15
+    try:
+        return datetime.strptime(fecha_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+
+    # Formato: 16/01/2026
+    try:
+        return datetime.strptime(fecha_str, "%d/%m/%Y").date()
+    except ValueError:
+        pass
+
+    # Formato: 13 enero, 2026
+    m = re.match(r"(\d{1,2})\s+([a-záéíóú]+),?\s+(\d{4})", fecha_str)
+    if m:
+        dia, mes, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    # Formato: enero 13, 2026
+    m = re.match(r"([a-záéíóú]+)\s+(\d{1,2}),?\s+(\d{4})", fecha_str)
+    if m:
+        mes, dia, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    return None
+
+def _extraer_fecha_autor_uchile(driver):
+    """Extrae fecha y autor de la noticia en radio.uchile.cl"""
+    fecha = None
+    fecha_raw = None
+    autor = "No encontrado"
+
+    # Estrategia 1: Header del artículo
+    try:
+        meta_info = driver.find_element(By.CSS_SELECTOR, ".post-header ul.meta")
+        items = meta_info.find_elements(By.TAG_NAME, "li")
+
+        if len(items) >= 2:
+            autor = items[0].text.strip()
+            fecha_raw = items[1].text.strip()
+            fecha_raw = re.sub(r'<[^>]+>', '', fecha_raw)
+    except:
+        pass
+
+    # Estrategia 2: JSON-LD
+    if fecha_raw is None or autor == "No encontrado":
+        try:
+            scripts = driver.find_elements(By.TAG_NAME, "script")
+            for script in scripts:
+                if script.get_attribute("type") == "application/ld+json":
+                    try:
+                        data = json.loads(script.get_attribute("innerHTML"))
+                        if isinstance(data, dict):
+                            if 'datePublished' in data and fecha_raw is None:
+                                fecha_raw = data['datePublished']
+                            if 'author' in data and autor == "No encontrado":
+                                if isinstance(data['author'], dict):
+                                    autor = data['author'].get('name', autor)
+                    except:
+                        continue
+        except:
+            pass
+
+    # Estrategia 3: meta tag
+    if fecha_raw is None:
+        try:
+            fecha_raw = driver.find_element(
+                By.CSS_SELECTOR,
+                "meta[property='article:published_time']"
+            ).get_attribute("content")
+        except:
+            pass
+
+    # Limpieza final del string
+    if fecha_raw:
+        fecha_raw = (
+            fecha_raw
+            .replace("Publicado:", "")
+            .replace("Actualizado:", "")
+            .strip()
+        )
+
+    # PARSEO FINAL (UNA SOLA VEZ)
+    fecha = _parsear_fecha(fecha_raw)
+
+    return {
+        'fecha': fecha,   # datetime.date | None
+        'autor': autor
+    }
+
+
+######################################################################################################################
 
 def guardar_en_db(datos):
     """Guardar datos en la base de datos"""
@@ -530,11 +650,11 @@ def guardar_en_db(datos):
             category=datos['categoria'][:200] if datos['categoria'] else ''
         )
         
-        print(f"  ✅ Guardado: {articulo.title[:60]}...")
+        print(f"Guardado: {articulo.title[:60]}...")
         return True
         
     except Exception as e:
-        print(f"  ❌ Error guardando en DB: {e}")
+        print(f"Error guardando en DB: {e}")
         return False
 
 def ejecutar_scraping(max_noticias=10):
@@ -573,7 +693,7 @@ def ejecutar_scraping(max_noticias=10):
                 if guardar_en_db(datos):
                     articulos_procesados += 1
             else:
-                print(f"  ⚠️ Sin contenido suficiente: {datos['titular'][:50]}...")
+                print(f"Sin contenido suficiente: {datos['titular'][:50]}...")
             
             # Pausa para no sobrecargar el servidor
             if i < min(max_noticias, len(urls)):
@@ -582,7 +702,7 @@ def ejecutar_scraping(max_noticias=10):
         return articulos_procesados
         
     except Exception as e:
-        print(f"\n❌ Error general en scraping: {e}")
+        print(f"\nError general en scraping: {e}")
         import traceback
         traceback.print_exc()
         return 0

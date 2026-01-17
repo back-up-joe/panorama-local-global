@@ -22,7 +22,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'author']
     search_fields = ['title', 'subtitle', 'content', 'author']
     ordering_fields = ['scraped_at', 'publication_date']
-    ordering = ['-scraped_at']
+    # ordering = ['-scraped_at']
+
+    ordering = ['-publication_date']
     
     def get_serializer_class(self):
         if self.action == 'list':

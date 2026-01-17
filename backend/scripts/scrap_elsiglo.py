@@ -275,6 +275,7 @@ def _extraer_categoria(driver):
     except:
         return "."
 
+'''
 def _extraer_fecha_autor(driver):
     """Extrae fecha y autor de la noticia"""
     fecha = "No encontrada"
@@ -297,7 +298,97 @@ def _extraer_fecha_autor(driver):
         except:
             pass
     
-    return {'fecha': fecha, 'autor': autor}
+    return {'fecha': fecha, 'autor': autor} '''
+
+###################################################################################################################################
+
+from datetime import datetime, date
+import re
+
+MESES_ES = {
+    "enero": 1,
+    "febrero": 2,
+    "marzo": 3,
+    "abril": 4,
+    "mayo": 5,
+    "junio": 6,
+    "julio": 7,
+    "agosto": 8,
+    "septiembre": 9,
+    "octubre": 10,
+    "noviembre": 11,
+    "diciembre": 12,
+}
+
+def _parsear_fecha(fecha_str: str) -> date | None:
+    if not fecha_str:
+        return None
+
+    fecha_str = fecha_str.strip().lower()
+
+    # Formatos ISO: 2026-01-15
+    try:
+        return datetime.strptime(fecha_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
+
+    # Formato: 16/01/2026
+    try:
+        return datetime.strptime(fecha_str, "%d/%m/%Y").date()
+    except ValueError:
+        pass
+
+    # Formato: 13 enero, 2026
+    m = re.match(r"(\d{1,2})\s+([a-záéíóú]+),?\s+(\d{4})", fecha_str)
+    if m:
+        dia, mes, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    # Formato: enero 13, 2026
+    m = re.match(r"([a-záéíóú]+)\s+(\d{1,2}),?\s+(\d{4})", fecha_str)
+    if m:
+        mes, dia, anio = m.groups()
+        return date(int(anio), MESES_ES[mes], int(dia))
+
+    return None
+
+def _extraer_fecha_autor(driver):
+    """Extrae fecha y autor de la noticia"""
+    fecha = None
+    autor = "No encontrado"
+
+    try:
+        fecha_raw = driver.find_element(
+            By.CSS_SELECTOR, "header.entry-header .date a"
+        ).text
+        autor = driver.find_element(
+            By.CSS_SELECTOR, "header.entry-header .by-author a"
+        ).text
+    except Exception as e:
+        print(f"Error al extraer fecha/autor: {e}")
+        try:
+            fecha_raw = driver.find_element(
+                By.CSS_SELECTOR, ".entry-meta .date a"
+            ).text
+        except:
+            fecha_raw = None
+
+        try:
+            autor = driver.find_element(
+                By.CSS_SELECTOR, ".entry-meta .by-author a"
+            ).text
+        except:
+            pass
+
+    fecha = _parsear_fecha(fecha_raw)
+
+    return {
+        "fecha": fecha,  # datetime.date | None
+        "autor": autor
+    }
+
+
+##################################################################################################################################
 
 def guardar_en_db(datos):
     """Guardar datos en la base de datos"""
