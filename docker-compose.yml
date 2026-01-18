@@ -127,7 +127,7 @@ services:
     # volumes:
       #- ./frontend:/app
     container_name: react_frontend
-    command: sh -c "npm run build && serve -s build -l 3000"
+    #command: sh -c "npm run build && serve -s build -l 3000"
     #command: serve -s build -l 3000
     ports:
       - "3000:3000"
