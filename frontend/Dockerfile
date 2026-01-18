@@ -2,22 +2,24 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY . .
-# COPY package.json . 
+# Copiamos solo lo necesario para instalar dependencias ######
+#COPY package*.json ./
+#RUN npm install
+################################################
 
-# First, check what's in package.json (for debugging)
-# RUN echo "Checking package.json..." && cat package.json | grep -A5 -B5 "scripts"
+COPY . .
 
 RUN npm install
 
-# Verify react-scripts is installed
-# RUN ls -la node_modules/.bin/ | grep react-scripts || echo "react-scripts not found!"
-
-# Copy source code
-# COPY . .
-
 # Build the app
 RUN npm run build
+
+# Etapa 2: producción FROM node:18-alpine AS production WORKDIR /app
+#FROM node:18-alpine AS production
+#######################################################
+
+# Copiamos solo la carpeta build desde la etapa anterior
+#COPY --from=builder /app/build ./build
 
 # Install serve and run
 RUN npm install -g serve
