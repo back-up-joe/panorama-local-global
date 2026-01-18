@@ -35,8 +35,12 @@ services:
   backend:
     build: ./backend
     container_name: django_backend
+    ## se agregó python manage.py collectstatic --noinput && para droplet
     command: >
-      sh -c "gunicorn scraper.wsgi:application --bind 0.0.0.0:8000"
+      sh -c "
+        python manage.py collectstatic --noinput &&
+        gunicorn scraper.wsgi:application --bind 0.0.0.0:8000
+      "
     volumes:
       - ./backend:/app
       - static_volume:/app/staticfiles
@@ -120,8 +124,8 @@ services:
 
   frontend:
     build: ./frontend
-    volumes:
-      - ./frontend:/app
+    # volumes:
+      #- ./frontend:/app
     container_name: react_frontend
     command: sh -c "npm run build && serve -s build -l 3000"
     ports:
