@@ -127,15 +127,17 @@ services:
     # volumes:
       #- ./frontend:/app
     container_name: react_frontend
+    env_file:
+      - .env
     #command: sh -c "npm run build && serve -s build -l 3000"
     #command: serve -s build -l 3000
     ports:
       - "3000:3000"
     depends_on:
       - backend
-    environment:
+    # environment:
       # REACT_APP_API_URL: http://localhost:8000
-      REACT_APP_API_URL: ${REACT_APP_API_BASE_URL}
+      # REACT_APP_API_URL: ${REACT_APP_API_URL}
 
 volumes:
   postgres_data:
