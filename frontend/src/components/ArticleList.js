@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { articleService } from "../services/api";
 
+import Footer from "./Footer";
+
 const ArticleList = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +74,7 @@ const ArticleList = () => {
         </div>
         <p className="mt-2">Cargando noticias...</p>
         <small className="text-muted">
-          Conectando a: http://localhost:8000/api/articles/
+          Conectando a servidor
         </small>
       </div>
     );
@@ -99,15 +101,16 @@ const ArticleList = () => {
   }
 
   return (
+    <>
     <div className="container">
       {/* Header con filtro de categorías */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Lo más reciente...</h2>
+        <h2 className="mb-0">Portal de noticias</h2>
         <div className="d-flex align-items-center gap-3">
-          <span className="badge bg-info">
-            {totalArticles} artículos en total
+          <span className="badge bg-danger">
+            {totalArticles} artículos disponibles
           </span>
-          {categories.length > 0 && (
+          {/*{categories.length > 0 && (
             <div className="dropdown">
               <button
                 className="btn btn-outline-primary dropdown-toggle"
@@ -138,11 +141,12 @@ const ArticleList = () => {
                 ))}
               </ul>
             </div>
-          )}
+          )}*/}
         </div>
       </div>
 
       {/* Contador de artículos filtrados */}
+      {/*}
       {filterCategory && (
         <div className="alert alert-info mb-4">
           <strong>Categoría:</strong> {filterCategory} |
@@ -155,7 +159,7 @@ const ArticleList = () => {
             Limpiar filtro
           </button>
         </div>
-      )}
+      )}*/}
 
       {/* Lista de artículos - MOSTRANDO TODOS */}
       {filteredArticles.length === 0 ? (
@@ -207,7 +211,7 @@ const ArticleList = () => {
                   {/* Categoría */}
                   {article.category && (
                     <div className="mb-2">
-                      <span className="badge bg-primary">
+                      <span className="badge bg-danger">
                         {article.category}
                       </span>
                     </div>
@@ -255,10 +259,10 @@ const ArticleList = () => {
                     {/* Botón para ver detalles */}
                     <Link
                       to={`/article/${article.id}`}
-                      className="btn btn-primary w-100"
+                      className="btn btn-danger w-100"
                     >
                       <i className="bi bi-eye me-1"></i>
-                      Leer artículo completo
+                      Leer artículo
                     </Link>
                   </div>
                 </div>
@@ -272,18 +276,25 @@ const ArticleList = () => {
       {filteredArticles.length > 0 && (
         <div className="mt-4 text-center">
           <div className="alert alert-light border">
+            {/*}
             <p className="mb-0">
               Mostrando <strong>{filteredArticles.length}</strong> de{" "}
               <strong>{articles.length}</strong> artículos
               {filterCategory && ` en la categoría "${filterCategory}"`}
+            </p>*/}
+            <p className="mb-0">
+              Mostrando <strong>{articles.length}</strong> artículos
             </p>
+            {/*
             <small className="text-muted">
               Total en la base de datos: {totalArticles} artículos
-            </small>
+            </small>*/}
           </div>
         </div>
-      )}
-    </div>
+      )}      
+    </div>  
+    <Footer/>
+  </>   
   );
 };
 

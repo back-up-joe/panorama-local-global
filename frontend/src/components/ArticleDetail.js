@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { articleService } from '../services/api';
 
+import Footer from './Footer';
+
 const ArticleDetail = () => {
   const { id } = useParams();
   const [article, setArticle] = useState(null);
@@ -63,10 +65,11 @@ const ArticleDetail = () => {
   }
 
   return (
+    <>
     <div className="container my-4">
       {/* Botón volver */}
       <div className="mb-4">
-        <Link to="/" className="btn btn-outline-primary">
+        <Link to="/" className="btn btn-outline-dark">
           Volver a noticias
         </Link>
       </div>
@@ -74,7 +77,7 @@ const ArticleDetail = () => {
       {/* Encabezado del artículo */}
       <div className="mb-5">
         {article.category && (
-          <span className="badge bg-primary mb-3 fs-6">
+          <span className="badge bg-danger mb-3 fs-6">
             {article.category}
           </span>
         )}
@@ -90,12 +93,13 @@ const ArticleDetail = () => {
             <i className="bi bi-person me-1"></i>
             {article.author || 'Anónimo'}
           </div>
+          {/*}
           {article.scraped_at && (
             <div className="text-muted">
               <i className="bi bi-clock-history me-1"></i>
               Actualizado: {new Date(article.scraped_at).toLocaleDateString('es-ES')}
             </div>
-          )}
+          )}*/}
         </div>
       </div>
 
@@ -145,19 +149,18 @@ const ArticleDetail = () => {
                 </li>
                 <li className="mb-2">
                   <strong>Autor:</strong> {article.author || 'No especificado'}
-                </li>
-                <li className="mb-2">
-                  <strong>Fecha de publicación:</strong> {article.publication_date}
-                </li>
+                </li>                
+                {/*
                 {article.scraped_at && (
                   <li className="mb-2">
                     <strong>Scrapeado:</strong> {new Date(article.scraped_at).toLocaleString('es-ES')}
                   </li>
-                )}
+                )}*/}
               </ul>
             </div>
             <div className="col-md-6">
               <ul className="list-unstyled">
+                {/*}
                 <li className="mb-2">
                   <strong>Párrafos:</strong> {article.paragraphs_count || 'N/A'}
                 </li>
@@ -168,6 +171,9 @@ const ArticleDetail = () => {
                   ) : (
                     <span className="badge bg-secondary ms-2">Inactivo</span>
                   )}
+                </li>*/}
+                <li className="mb-2">
+                  <strong>Fecha de publicación:</strong> {article.publication_date}
                 </li>
                 {article.url && (
                   <li className="mb-2">
@@ -178,7 +184,7 @@ const ArticleDetail = () => {
                       rel="noopener noreferrer"
                       className="ms-2 small"
                     >
-                      Ver fuente
+                      Ver noticia
                     </a>
                   </li>
                 )}
@@ -190,17 +196,19 @@ const ArticleDetail = () => {
 
       {/* Botones de navegación */}
       <div className="d-flex justify-content-between mb-5">
-        <Link to="/" className="btn btn-outline-primary">
+        <Link to="/" className="btn btn-outline-danger">
           Volver a todas las noticias
         </Link>
         <button 
-          className="btn btn-outline-secondary"
+          className="btn btn-outline-dark"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           Volver arriba
         </button>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 
