@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 // Configura la URL base de API Django
-const API_BASE_URL = 'http://localhost:8000/api/';
+// const API_BASE_URL = 'http://localhost:8000/api/';
 
 // const API_BASE_URL = 'http://159.203.81.186:8000/api/';
 
-// const API_BASE_URL = process.env.REACT_APP_API_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 console.log('API_BASE_URL desde .env:', API_BASE_URL);  // Añade esta línea
 
