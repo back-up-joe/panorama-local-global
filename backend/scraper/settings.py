@@ -148,6 +148,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React por defecto
     "http://127.0.0.1:3000",
+    "http://159.203.81.186:3000",  # Droplet React
 ]
 
 # REST Framework
