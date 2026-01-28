@@ -30,7 +30,7 @@ const ArticleDetail = () => {
   if (loading) {
     return (
       <div className="text-center my-5">
-        <div className="spinner-border text-primary" role="status">
+        <div className="spinner-border text-danger" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
         <p className="mt-2">Cargando artículo...</p>
@@ -43,7 +43,7 @@ const ArticleDetail = () => {
       <div className="alert alert-danger" role="alert">
         {error}
         <div className="mt-3">
-          <Link to="/" className="btn btn-outline-primary">
+          <Link to="/" className="btn btn-outline-danger">
             Volver al inicio
           </Link>
         </div>
@@ -56,7 +56,7 @@ const ArticleDetail = () => {
       <div className="alert alert-warning" role="alert">
         Artículo no encontrado.
         <div className="mt-3">
-          <Link to="/" className="btn btn-outline-primary">
+          <Link to="/" className="btn btn-outline-danger">
             Volver al inicio
           </Link>
         </div>
@@ -93,13 +93,6 @@ const ArticleDetail = () => {
             <i className="bi bi-person me-1"></i>
             {article.author || 'Anónimo'}
           </div>
-          {/*}
-          {article.scraped_at && (
-            <div className="text-muted">
-              <i className="bi bi-clock-history me-1"></i>
-              Actualizado: {new Date(article.scraped_at).toLocaleDateString('es-ES')}
-            </div>
-          )}*/}
         </div>
       </div>
 
@@ -149,29 +142,11 @@ const ArticleDetail = () => {
                 </li>
                 <li className="mb-2">
                   <strong>Autor:</strong> {article.author || 'No especificado'}
-                </li>                
-                {/*
-                {article.scraped_at && (
-                  <li className="mb-2">
-                    <strong>Scrapeado:</strong> {new Date(article.scraped_at).toLocaleString('es-ES')}
-                  </li>
-                )}*/}
+                </li>                                
               </ul>
             </div>
             <div className="col-md-6">
               <ul className="list-unstyled">
-                {/*}
-                <li className="mb-2">
-                  <strong>Párrafos:</strong> {article.paragraphs_count || 'N/A'}
-                </li>
-                <li className="mb-2">
-                  <strong>Estado:</strong> 
-                  {article.is_active ? (
-                    <span className="badge bg-success ms-2">Activo</span>
-                  ) : (
-                    <span className="badge bg-secondary ms-2">Inactivo</span>
-                  )}
-                </li>*/}
                 <li className="mb-2">
                   <strong>Fecha de publicación:</strong> {article.publication_date}
                 </li>
@@ -199,8 +174,8 @@ const ArticleDetail = () => {
         <Link to="/" className="btn btn-outline-danger">
           Volver a todas las noticias
         </Link>
-        <button 
-          className="btn btn-outline-dark"
+        <button
+          className="btn btn-outline-dark ms-5"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           Volver arriba

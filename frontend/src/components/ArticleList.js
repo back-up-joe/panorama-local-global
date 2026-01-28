@@ -69,7 +69,7 @@ const ArticleList = () => {
   if (loading) {
     return (
       <div className="text-center my-5">
-        <div className="spinner-border text-primary" role="status">
+        <div className="spinner-border text-danger" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
         <p className="mt-2">Cargando noticias...</p>
@@ -91,7 +91,7 @@ const ArticleList = () => {
             <button className="btn btn-danger me-2" onClick={fetchArticles}>
               Reintentar
             </button>
-            <a href="/" className="btn btn-outline-secondary">
+            <a href="/" className="btn btn-outline-dark">
               Recargar página
             </a>
           </div>
@@ -107,59 +107,15 @@ const ArticleList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Portal de noticias</h2>
         <div className="d-flex align-items-center gap-3">
-          <span className="badge bg-danger">
-            {totalArticles} artículos disponibles
+          <span className="badge bg-danger ps-3 pe-3">
+            {filteredArticles.length} artículos
           </span>
-          {/*{categories.length > 0 && (
-            <div className="dropdown">
-              <button
-                className="btn btn-outline-primary dropdown-toggle"
-                type="button"
-                id="categoryDropdown"
-                data-bs-toggle="dropdown"
-              >
-                {filterCategory || "Todas las categorías"}
-              </button>
-              <ul className="dropdown-menu">
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => setFilterCategory("")}
-                  >
-                    Todas las categorías
-                  </button>
-                </li>
-                {categories.map((category, index) => (
-                  <li key={index}>
-                    <button
-                      className="dropdown-item"
-                      onClick={() => setFilterCategory(category)}
-                    >
-                      {category}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}*/}
-        </div>
+        </div>        
       </div>
-
-      {/* Contador de artículos filtrados */}
-      {/*}
-      {filterCategory && (
-        <div className="alert alert-info mb-4">
-          <strong>Categoría:</strong> {filterCategory} |
-          <strong> Artículos:</strong> {filteredArticles.length} de{" "}
-          {articles.length}
-          <button
-            className="btn btn-sm btn-outline-info ms-3"
-            onClick={() => setFilterCategory("")}
-          >
-            Limpiar filtro
-          </button>
-        </div>
-      )}*/}
+      <div>
+        <p>Aquí se comparten noticias nacionales e internacionales traídas desde diversos portales informativos. Queremos contribuir a la difusión de artículos y análisis que los medios de comunicación hegemónicos no profundizan. Estas noticias son obtenidas mediante el método de web scraping y esperamos ir ampliando la cantidad y la diversidad de nuestras fuentes. No tenemos fines de lucro y agradecemos la difusión.</p>
+        <p><i>"Información para despertar, análisis para entender, herramientas para actuar"</i>(Noam Chomsky).</p>
+      </div>
 
       {/* Lista de artículos - MOSTRANDO TODOS */}
       {filteredArticles.length === 0 ? (
@@ -276,19 +232,9 @@ const ArticleList = () => {
       {filteredArticles.length > 0 && (
         <div className="mt-4 text-center">
           <div className="alert alert-light border">
-            {/*}
-            <p className="mb-0">
-              Mostrando <strong>{filteredArticles.length}</strong> de{" "}
-              <strong>{articles.length}</strong> artículos
-              {filterCategory && ` en la categoría "${filterCategory}"`}
-            </p>*/}
             <p className="mb-0">
               Mostrando <strong>{articles.length}</strong> artículos
             </p>
-            {/*
-            <small className="text-muted">
-              Total en la base de datos: {totalArticles} artículos
-            </small>*/}
           </div>
         </div>
       )}      
