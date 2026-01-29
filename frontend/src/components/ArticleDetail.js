@@ -175,7 +175,7 @@ const ArticleDetail = () => {
           Volver a todas las noticias
         </Link>
         <button
-          className="btn btn-outline-dark ms-5"
+          className="btn btn-outline-dark ms-3"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           Volver arriba
