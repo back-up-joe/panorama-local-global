@@ -107,11 +107,12 @@ const ArticleList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Portal de noticias</h2>
         <div className="d-flex align-items-center gap-3">
-          <span className="badge bg-danger ps-3 pe-3">
+          <span className="badge bg-danger ps-2 pe-2">
             {filteredArticles.length} artículos
           </span>
         </div>        
       </div>
+      <hr></hr>
       <div>
         <p>Aquí se comparten noticias nacionales e internacionales traídas desde diversos portales informativos. Queremos contribuir a la difusión de artículos y análisis que los medios de comunicación hegemónicos no profundizan. Estas noticias son obtenidas mediante el método de web scraping y esperamos ir ampliando la cantidad y diversidad de nuestras fuentes. No tenemos fines de lucro y agradecemos la difusión.</p>
         <p><i>"Información para despertar, análisis para entender, herramientas para actuar"</i>(Noam Chomsky).</p>
