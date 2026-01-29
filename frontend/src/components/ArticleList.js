@@ -117,6 +117,7 @@ const ArticleList = () => {
         <p>Aquí se comparten noticias nacionales e internacionales traídas desde diversos portales informativos. Queremos contribuir a la difusión de artículos y análisis que los medios de comunicación hegemónicos no profundizan. Estas noticias son obtenidas mediante el método de web scraping y esperamos ir ampliando la cantidad y diversidad de nuestras fuentes. No tenemos fines de lucro y agradecemos la difusión.</p>
         <p><i>"Información para despertar, análisis para entender, herramientas para actuar"</i>(Noam Chomsky).</p>
       </div>
+      <hr></hr>
 
       {/* Lista de artículos - MOSTRANDO TODOS */}
       {filteredArticles.length === 0 ? (
