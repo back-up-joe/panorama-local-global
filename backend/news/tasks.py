@@ -90,6 +90,7 @@ def scrap_rebelion(self, max_articles=5):
         # Reintentar después de 5 minutos
         raise self.retry(exc=e, countdown=300)
 
+'''
 @shared_task(bind=True, max_retries=3)
 def scrap_radiouchile(self, max_articles=5):
     """
@@ -118,6 +119,7 @@ def scrap_radiouchile(self, max_articles=5):
         print(f"Error en scraping: {e}")
         # Reintentar después de 5 minutos
         raise self.retry(exc=e, countdown=300)
+        '''
     
 @shared_task(bind=True, max_retries=3)
 def scrap_eldespertar(self, max_articles=5):

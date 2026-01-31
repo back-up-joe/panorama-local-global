@@ -1,3 +1,4 @@
+'''
 from django.core.management.base import BaseCommand
 from scripts.scrap_radiouchile import run
 
@@ -8,3 +9,4 @@ class Command(BaseCommand):
         run()
 
         self.stdout.write(self.style.SUCCESS('Scraping de Radio UChile: OK'))
+        '''
