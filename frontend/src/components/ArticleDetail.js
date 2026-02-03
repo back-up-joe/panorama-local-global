@@ -117,7 +117,8 @@ const ArticleDetail = () => {
 
       {/* Contenido del artículo */}
       <div className="mb-5">
-        <h3 className="mb-4">Contenido</h3>
+        {/*
+        <h3 className="mb-4">Contenido</h3> */}
         <div className="article-content fs-5" style={{ lineHeight: '1.8' }}>
           {article.content && article.content.split('\n').map((paragraph, index) => (
             <p key={index} className="mb-4">
