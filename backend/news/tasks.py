@@ -189,7 +189,7 @@ def scrap_diariored(self, max_articles=5):
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 
         # Importar y ejecutar scraping
-        from scripts.scrap_radionuevomundo import ejecutar_scraping
+        from scripts.scrap_diariored import ejecutar_scraping
 
         procesadas = ejecutar_scraping(max_noticias=max_articles)
 
