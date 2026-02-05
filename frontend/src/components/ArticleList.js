@@ -154,7 +154,7 @@ const ArticleList = () => {
                     }}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/assets/no-image.png";
+                      e.target.src = "";
                     }}
                   />
                 ) : (

@@ -106,7 +106,7 @@ const ArticleDetail = () => {
             style={{ maxHeight: '500px', width: 'auto', maxWidth: '100%' }}
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = '/assets/no-image.png';
+              e.target.src = '';
             }}
           />
           <p className="text-muted mt-2 small">
