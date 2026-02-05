@@ -37,7 +37,7 @@ def extraer_urls_secciones(driver):
 
     try:
         # Visitar la página principal en lugar de la sección específica
-        driver.get("https://www.diario-red.com/")
+        driver.get("https://www.diario-red.com/seccion/america-latina/")
         time.sleep(3)
 
         # Extraer artículos principales (noticias más recientes)
