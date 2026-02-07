@@ -177,6 +177,35 @@ def scrap_radionuevomundo(self, max_articles=5):
         print(f"Error en scraping: {e}")
         # Reintentar después de 5 minutos
         raise self.retry(exc=e, countdown=300)
+    
+@shared_task(bind=True, max_retries=3)
+def scrap_elciudadano(self, max_articles=5):
+    """
+    Tarea principal de scraping
+    """
+    try:
+        print(f"[{timezone.now()}] Iniciando scraping de El Ciudadano...")
+
+        # Agregar directorio scripts al path
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+
+        # Importar y ejecutar scraping
+        from scripts.scrap_elciudadano import ejecutar_scraping
+
+        procesadas = ejecutar_scraping(max_noticias=max_articles)
+
+        return {
+            'status': 'success',
+            'task': 'scrap_elciudadano',
+            'articles_processed': procesadas,
+            'timestamp': timezone.now().isoformat(),
+            'message': f'Procesadas {procesadas} noticias'
+        }
+
+    except Exception as e:
+        print(f"Error en scraping: {e}")
+        # Reintentar después de 5 minutos
+        raise self.retry(exc=e, countdown=300)
 
 @shared_task(bind=True, max_retries=3)
 def scrap_diariored(self, max_articles=5):
@@ -197,6 +226,35 @@ def scrap_diariored(self, max_articles=5):
         return {
             'status': 'success',
             'task': 'scrap_diariored',
+            'articles_processed': procesadas,
+            'timestamp': timezone.now().isoformat(),
+            'message': f'Procesadas {procesadas} noticias'
+        }
+
+    except Exception as e:
+        print(f"Error en scraping: {e}")
+        # Reintentar después de 5 minutos
+        raise self.retry(exc=e, countdown=300)
+
+@shared_task(bind=True, max_retries=3)
+def scrap_jacobin(self, max_articles=5):
+    """
+    Tarea principal de scraping
+    """
+    try:
+        print(f"[{timezone.now()}] Iniciando scraping de JacobinLat...")
+
+        # Agregar directorio scripts al path
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+
+        # Importar y ejecutar scraping
+        from scripts.scrap_jacobin import ejecutar_scraping
+
+        procesadas = ejecutar_scraping(max_noticias=max_articles)
+
+        return {
+            'status': 'success',
+            'task': 'scrap_jacobin',
             'articles_processed': procesadas,
             'timestamp': timezone.now().isoformat(),
             'message': f'Procesadas {procesadas} noticias'
