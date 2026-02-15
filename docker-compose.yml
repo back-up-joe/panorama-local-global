@@ -131,7 +131,7 @@ services:
     env_file:
       - .env
     ports:
-      - "3000:3000"
+      - "443:3000"
     depends_on:
       - backend
 
