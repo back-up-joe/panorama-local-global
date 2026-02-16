@@ -29,7 +29,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', '')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS',
+                          'localhost,127.0.0.1',
+                          'resistenciainformativa.org',
+                          'www.resistenciainformativa.org').split(',')
 
 # Application definition
 
@@ -148,12 +151,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React por defecto
     "http://127.0.0.1:3000",
+    "http://159.203.81.186",
     "http://159.203.81.186:443",  # Droplet React
     "http://localhost:443",  # Droplet React
     "http://159.203.81.186:3000",  # Droplet React
     "https://resistenciainformativa.org",  # Dominio de producción
     "https://www.resistenciainformativa.org",  # Dominio con www
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # REST Framework
 REST_FRAMEWORK = {
