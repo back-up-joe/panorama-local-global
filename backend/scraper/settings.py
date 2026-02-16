@@ -157,7 +157,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React por defecto
     "http://127.0.0.1:3000",
     "http://159.203.81.186",
-    "http://159.203.81.186:443",  # Droplet React
+    "http://159.203.81.186:443",
+    "http://159.203.81.186:80",  # Droplet React
     "http://localhost:443",  # Droplet React
     "http://159.203.81.186:3000",  # Droplet React
     "https://resistenciainformativa.org",  # Dominio de producción
