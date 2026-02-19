@@ -169,7 +169,15 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.resistenciainformativa.org",  # Dominio con www
 ]
 
+# CSRF confía en HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    "https://resistenciainformativa.org",
+    "https://www.resistenciainformativa.org",
+]
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # REST Framework
 REST_FRAMEWORK = {
