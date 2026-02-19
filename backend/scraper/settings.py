@@ -158,11 +158,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React por defecto
     "http://127.0.0.1:3000",
-    "http://164.90.155.181.186",
-    "http://164.90.155.181.186:443",
-    "http://164.90.155.181.186:80",  # Droplet React
+    "http://164.90.155.181",
+    "http://164.90.155.181:443",
+    "http://164.90.155.181:80",  # Droplet React
     "http://localhost:443",  # Droplet React
-    "http://164.90.155.181.186:3000",  # Droplet React
+    "http://164.90.155.181:3000",  # Droplet React
     "https://resistenciainformativa.org",  # Dominio de producción
     "https://www.resistenciainformativa.org",  # Dominio con www
 ]
