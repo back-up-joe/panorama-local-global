@@ -144,8 +144,6 @@ services:
     volumes:
       - /etc/ssl/cloudflare:/etc/nginx/ssl:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - panorama-local-global_default
     depends_on:
       - react_frontend
 
