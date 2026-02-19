@@ -145,7 +145,7 @@ services:
       - /etc/ssl/cloudflare:/etc/nginx/ssl:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - react_frontend
+      - frontend
 
 volumes:
   postgres_data:
