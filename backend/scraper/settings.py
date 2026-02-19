@@ -35,7 +35,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     "localhost",
     "164.90.155.181",
-    "164.90.155.181:8000",
+    "164.90.155.181",
     "127.0.0.1",
     "resistenciainformativa.org",
     "www.resistenciainformativa.org"
