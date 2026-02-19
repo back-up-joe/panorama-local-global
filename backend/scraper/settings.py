@@ -38,7 +38,9 @@ ALLOWED_HOSTS = [
     "164.90.155.181",
     "127.0.0.1",
     "resistenciainformativa.org",
-    "www.resistenciainformativa.org"
+    "www.resistenciainformativa.org",
+    "backend",
+    "frontend",
 ]
 
 # Application definition
