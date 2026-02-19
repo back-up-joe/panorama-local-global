@@ -163,6 +163,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://164.90.155.181:80",  # Droplet React
     "http://localhost:443",  # Droplet React
     "http://164.90.155.181:3000",  # Droplet React
+    "http://resistenciainformativa.org",
+    "http://www.resistenciainformativa.org",
     "https://resistenciainformativa.org",  # Dominio de producción
     "https://www.resistenciainformativa.org",  # Dominio con www
 ]
