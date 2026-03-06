@@ -486,7 +486,7 @@ def guardar_en_db(datos: Dict) -> bool:
         traceback.print_exc()
         return False
 
-def ejecutar_scraping_jacobin(max_noticias=10):
+def ejecutar_scraping(max_noticias=10):
     """Función principal de scraping para JacobinLat"""
     driver = None
     articulos_procesados = 0
@@ -554,7 +554,7 @@ def ejecutar_scraping_jacobin(max_noticias=10):
 
 def run():
     """Función para ejecutar desde Django"""
-    cantidad = ejecutar_scraping_jacobin(max_noticias=10)
+    cantidad = ejecutar_scraping(max_noticias=10)
     
     print(f"\n{'='*80}")
     print("SCRAPING COMPLETADO")
@@ -576,7 +576,7 @@ def run():
 
 if __name__ == "__main__":
     # Ejecutar desde línea de comandos
-    cantidad = ejecutar_scraping_jacobin(max_noticias=10)
+    cantidad = ejecutar_scraping(max_noticias=10)
     print(f"\n{'='*80}")
     print("SCRAPING COMPLETADO")
     print(f"✅ Artículos procesados exitosamente: {cantidad}")

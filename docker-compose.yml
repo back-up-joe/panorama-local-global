@@ -93,6 +93,7 @@ services:
       - db
       - redis
       - beat
+    restart: always
 
   beat:
     build: ./backend
