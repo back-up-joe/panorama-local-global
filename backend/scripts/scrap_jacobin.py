@@ -6,19 +6,21 @@ from datetime import datetime, date
 import re
 from typing import List, Dict, Optional
 
+from seleniumwire import webdriver
+
 # Configurar Django
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scraper.settings')
 django.setup()
 
 from news.models import Article
-from selenium import webdriver
+# from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def configurar_driver():
+def configurar_driver(usar_proxy=True):
     """Configurar Selenium WebDriver"""
     options = Options()
     options.add_argument("--headless=new")
@@ -28,8 +30,20 @@ def configurar_driver():
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
+
+    seleniumwire_options = {}
+
+    if usar_proxy:
+        seleniumwire_options = {
+            'proxy': {
+                'http': 'http://tomaspiproxy:T0m4sp1!@tomaspi.servehalflife.com:3128',
+                'https': 'http://tomaspiproxy:T0m4sp1!@tomaspi.servehalflife.com:3128',
+            }
+        }
     
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(
+        options=options,
+        seleniumwire_options=seleniumwire_options)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     
     return driver
