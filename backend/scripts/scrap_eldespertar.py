@@ -180,7 +180,8 @@ def extraer_datos_noticia(driver, url):
         datos['bajada'] = _extraer_bajada_eldespertar(driver)
         
         # Extraer imagen
-        datos['imagen'] = _extraer_imagen_eldespertar(driver)
+        # datos['imagen'] = _extraer_imagen_eldespertar(driver)
+        datos['imagen'] = 'https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg'
         
         # Extraer contenido
         contenido_info = _extraer_contenido_eldespertar(driver)

@@ -147,7 +147,7 @@ def extraer_datos_noticia(driver, url):
         'url': url,
         'titular': 'No encontrado',
         'bajada': 'No encontrada',
-        'imagen': 'No encontrada',
+        'imagen': '',
         'contenido': [],
         'fecha': None,
         'autor': 'No encontrado',
@@ -165,7 +165,8 @@ def extraer_datos_noticia(driver, url):
         datos['bajada'] = _extraer_bajada(driver)
         
         # Extraer imagen (función mejorada)
-        datos['imagen'] = _extraer_imagen_mejorada(driver)
+        # datos['imagen'] = _extraer_imagen_mejorada(driver)
+        datos['imagen'] = 'https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg'
         
         # Extraer contenido
         contenido_info = _extraer_contenido(driver)
