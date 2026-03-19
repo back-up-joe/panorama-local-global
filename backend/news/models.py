@@ -16,7 +16,8 @@ class Article(models.Model):
     category = models.CharField(max_length=200, verbose_name="Categoría")
     scraped_at = models.DateTimeField(default=timezone.now, verbose_name="Fecha Extracción")
     is_active = models.BooleanField(default=True, verbose_name="Activo")
-    
+    published_on_instagram = models.BooleanField(default=False, verbose_name="Publicado en Instagram")
+
     class Meta:
         ordering = ['-scraped_at']
         indexes = [
