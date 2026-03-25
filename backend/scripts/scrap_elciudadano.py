@@ -166,7 +166,9 @@ def extraer_datos_noticia(driver, url):
         
         # Extraer imagen (función mejorada)
         # datos['imagen'] = _extraer_imagen_mejorada(driver)
-        datos['imagen'] = 'https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg'
+        # datos['imagen'] = 'https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg'
+
+        datos['imagen'] = 'https://media.istockphoto.com/id/2156086997/es/vector/collage-moderno-de-arte-pop-con-boca-gritona-y-meg%C3%A1fono.jpg?s=612x612&w=0&k=20&c=djIQ_zYdKY0AjFL6gquTO9EjSs1gPyPvm87cwBdvXAY='
         
         # Extraer contenido
         contenido_info = _extraer_contenido(driver)
