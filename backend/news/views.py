@@ -1,3 +1,4 @@
+from rest_framework.views import APIView
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -6,8 +7,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Count, Q
+from django.db import models
 from django.shortcuts import get_object_or_404
-from .models import Article, Comment
+from .models import Article, Comment, VisitCounter
 from .serializers import (
     ArticleSerializer, 
     ArticleListSerializer, 
@@ -215,3 +217,42 @@ class ArticleViewSet(viewsets.ModelViewSet):
                 {'error': 'Comentario no encontrado'}, 
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class VisitCounterView(APIView):
+    """Vista simple para el contador de visitas"""
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """Obtener el total de visitas"""
+        total = VisitCounter.objects.aggregate(
+            total=models.Sum('total_visits')
+        )['total'] or 0
+        
+        return Response({'total_visits': total})
+    
+    def post(self, request):
+        """Registrar una nueva visita"""
+        # Verificar si ya se contó en esta sesión
+        if request.session.get('visit_counted'):
+            total = VisitCounter.objects.aggregate(
+                total=models.Sum('total_visits')
+            )['total'] or 0
+            return Response({'total_visits': total, 'status': 'already_counted'})
+        
+        # Registrar la visita
+        today_counter, _ = VisitCounter.objects.get_or_create(
+            date=timezone.now().date(),
+            defaults={'total_visits': 0}
+        )
+        today_counter.total_visits += 1
+        today_counter.save()
+        
+        # Marcar en sesión
+        request.session['visit_counted'] = True
+        
+        # Obtener total
+        total = VisitCounter.objects.aggregate(
+            total=models.Sum('total_visits')
+        )['total'] or 0
+        
+        return Response({'total_visits': total})

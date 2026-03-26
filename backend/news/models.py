@@ -80,3 +80,16 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"Comentario de {self.name} en {self.article.title[:30]}..."
+
+class VisitCounter(models.Model):
+    """Contador simple de visitas del sitio"""
+    total_visits = models.PositiveIntegerField(default=0, verbose_name="Visitas totales")
+    date = models.DateField(auto_now_add=True, verbose_name="Fecha")
+    
+    class Meta:
+        verbose_name = "Contador de visitas"
+        verbose_name_plural = "Contadores de visitas"
+        ordering = ['-date']
+    
+    def __str__(self):
+        return f"{self.total_visits} visitas - {self.date}"

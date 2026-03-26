@@ -196,7 +196,7 @@ const CommentSection = ({ articleId }) => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Tu nombre"
+                    placeholder=""
                     maxLength={NAME_MAX}
                   />
                   {formErrors.name && (
@@ -220,7 +220,7 @@ const CommentSection = ({ articleId }) => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="tu@email.com"
+                    placeholder=""
                     maxLength={EMAIL_MAX}
                   />
                   {formErrors.email && (
@@ -244,7 +244,7 @@ const CommentSection = ({ articleId }) => {
                   rows="4"
                   value={formData.comment}
                   onChange={handleInputChange}
-                  placeholder="Escribe tu comentario aquí..."
+                  placeholder=""
                   maxLength={COMMENT_MAX}
                 ></textarea>
                 {formErrors.comment && (

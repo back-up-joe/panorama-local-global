@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { articleService } from "../services/api";
+import visitService from "../services/visitService";
 
 import Footer from "./Footer";
 
@@ -10,9 +11,11 @@ const ArticleList = () => {
   const [error, setError] = useState(null);
   const [filterCategory, setFilterCategory] = useState("");
   const [totalArticles, setTotalArticles] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(0);
 
   useEffect(() => {
     fetchArticles();
+    registerAndGetVisits();
   }, []);
 
   const fetchArticles = async () => {
@@ -50,6 +53,14 @@ const ArticleList = () => {
       setLoading(false);
     }
   };
+
+  // Función para registrar y obtener visitas
+  const registerAndGetVisits = async () => {
+    console.log("Registrando visita..."); // Para depuración
+    const visits = await visitService.registerVisit();
+    console.log("Visitas obtenidas:", visits); // Para depuración
+    setTotalVisits(visits);
+  };  
 
   // Extraer categorías únicas de los artículos
   const categories =
@@ -111,7 +122,12 @@ const ArticleList = () => {
           <span className="badge bg-danger ps-2 pe-2">
             {filteredArticles.length} artículos
           </span>
-        </div> */}        
+        </div> */}  {/* SE PUEDE INSERTAR EL CONTADOR DE VISITAS ACÁ */} 
+        
+        {/* CONTADOR DE VISITAS */}
+        <div className="badge bg-danger ps-3 pe-3 py-2 fs-6">
+          {totalVisits.toLocaleString()} visitas
+        </div>     
       </div>
       <hr></hr>
       <div>
