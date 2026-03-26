@@ -106,11 +106,12 @@ const ArticleList = () => {
       {/* Header con filtro de categorías */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Portal de noticias</h2>
+        {/*
         <div className="d-flex align-items-center gap-3">
           <span className="badge bg-danger ps-2 pe-2">
             {filteredArticles.length} artículos
           </span>
-        </div>        
+        </div> */}        
       </div>
       <hr></hr>
       <div>

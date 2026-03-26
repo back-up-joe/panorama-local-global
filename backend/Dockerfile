@@ -29,14 +29,26 @@ RUN apt-get update && apt-get install -y \
      && rm -rf /var/lib/apt/lists/*
 
 # Instalar ChromeDriver que coincida con la versión de Chrome
-RUN set -eux; \
-    CHROME_VERSION=$(google-chrome --version | awk '{print $3}'); \
-    wget -O /tmp/chromedriver.zip \
-      "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"; \
-    unzip /tmp/chromedriver.zip -d /tmp/; \
-    mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver; \
-    chmod +x /usr/local/bin/chromedriver; \
-    rm -rf /tmp/*
+#RUN set -eux; \
+ #   CHROME_VERSION=$(google-chrome --version | awk '{print $3}'); \
+  #  wget -O /tmp/chromedriver.zip \
+   #   "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"; \
+    #unzip /tmp/chromedriver.zip -d /tmp/; \
+    #mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver; \
+    #chmod +x /usr/local/bin/chromedriver; \
+    #rm -rf /tmp/*
+
+# Instalar ChromeDriver que coincida con la versión de Chrome
+#RUN set -eux; \
+ #   CHROME_VERSION=$(google-chrome --version | awk '{print $3}'); \
+    # Extraer la versión principal (ej: 146.0.7680.164)
+    # La URL para ChromeDriver ahora usa un formato diferente
+  #  wget -O /tmp/chromedriver.zip \
+   #   "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"; \
+    #unzip /tmp/chromedriver.zip -d /tmp/; \
+    #mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver; \
+    #chmod +x /usr/local/bin/chromedriver; \
+    #rm -rf /tmp/*
 
 # Instalar dependencias de Python
 COPY requirements.txt .
