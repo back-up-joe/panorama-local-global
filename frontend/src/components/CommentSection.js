@@ -14,6 +14,13 @@ const CommentSection = ({ articleId }) => {
   const [formErrors, setFormErrors] = useState({});
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  // Constantes para límites de caracteres
+  const NAME_MIN = 2;
+  const NAME_MAX = 100;
+  const EMAIL_MAX = 100;
+  const COMMENT_MIN = 5;
+  const COMMENT_MAX = 1000;
+
   useEffect(() => {
     fetchComments();
   }, [articleId]);
@@ -34,22 +41,31 @@ const CommentSection = ({ articleId }) => {
   const validateForm = () => {
     const errors = {};
     
+    // Validación del nombre
     if (!formData.name.trim()) {
       errors.name = 'El nombre es obligatorio';
-    } else if (formData.name.length < 2) {
-      errors.name = 'El nombre debe tener al menos 2 caracteres';
+    } else if (formData.name.length < NAME_MIN) {
+      errors.name = `El nombre debe tener al menos ${NAME_MIN} caracteres`;
+    } else if (formData.name.length > NAME_MAX) {
+      errors.name = `El nombre no puede exceder ${NAME_MAX} caracteres`;
     }
     
+    // Validación del email
     if (!formData.email.trim()) {
       errors.email = 'El email es obligatorio';
+    } else if (formData.email.length > EMAIL_MAX) {
+      errors.email = `El email no puede exceder ${EMAIL_MAX} caracteres`;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Ingresa un email válido';
     }
-    
+
+    // Validación del comentario
     if (!formData.comment.trim()) {
       errors.comment = 'El comentario es obligatorio';
-    } else if (formData.comment.length < 5) {
-      errors.comment = 'El comentario debe tener al menos 5 caracteres';
+    } else if (formData.comment.length < COMMENT_MIN) {
+      errors.comment = `El comentario debe tener al menos ${COMMENT_MIN} caracteres`;
+    } else if (formData.comment.length > COMMENT_MAX) {
+      errors.comment = `El comentario no puede exceder ${COMMENT_MAX} caracteres`;
     }
     
     setFormErrors(errors);
@@ -58,10 +74,17 @@ const CommentSection = ({ articleId }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Opcional: Limitar la entrada en tiempo real para comentario
+    if (name === 'comment' && value.length > COMMENT_MAX) {
+      return; // No permitir más caracteres
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
     // Limpiar error del campo cuando el usuario empieza a escribir
     if (formErrors[name]) {
       setFormErrors(prev => ({
@@ -108,6 +131,11 @@ const CommentSection = ({ articleId }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Contador de caracteres para el comentario
+  const getCharacterCount = () => {
+    return `${formData.comment.length}/${COMMENT_MAX}`;
   };
 
   if (loading && comments.length === 0) {
@@ -169,10 +197,16 @@ const CommentSection = ({ articleId }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Tu nombre"
+                    maxLength={NAME_MAX}
                   />
                   {formErrors.name && (
                     <div className="invalid-feedback">{formErrors.name}</div>
                   )}
+                  {/*
+                  <div className="form-text text-muted small">
+                    <i className="bi bi-info-circle me-1"></i>
+                    {NAME_MIN}-{NAME_MAX} caracteres.
+                  </div> */}
                 </div>
                 
                 <div className="col-md-6 mb-3">
@@ -187,6 +221,7 @@ const CommentSection = ({ articleId }) => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="tu@email.com"
+                    maxLength={EMAIL_MAX}
                   />
                   {formErrors.email && (
                     <div className="invalid-feedback">{formErrors.email}</div>
@@ -210,10 +245,21 @@ const CommentSection = ({ articleId }) => {
                   value={formData.comment}
                   onChange={handleInputChange}
                   placeholder="Escribe tu comentario aquí..."
+                  maxLength={COMMENT_MAX}
                 ></textarea>
                 {formErrors.comment && (
                   <div className="invalid-feedback">{formErrors.comment}</div>
                 )}
+                <div className="form-text text-muted small d-flex justify-content-between">
+                  {/*
+                  <span>
+                    <i className="bi bi-info-circle me-1"></i>
+                    Mínimo {COMMENT_MIN}, máximo {COMMENT_MAX} caracteres.
+                  </span> */}
+                  <span className={`${formData.comment.length > COMMENT_MAX * 0.9 ? 'text-warning' : ''}`}>
+                    {getCharacterCount()}
+                  </span>
+                </div>
               </div>
               
               <button

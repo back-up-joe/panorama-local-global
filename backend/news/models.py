@@ -51,9 +51,21 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name="Artículo"
     )
-    name = models.CharField(max_length=200, verbose_name="Nombre")
-    email = models.EmailField(verbose_name="Email")
-    comment = models.TextField(verbose_name="Comentario")
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Nombre",
+        help_text="Mínimo 2 caracteres, máximo 100 caracteres",    
+    )
+    email = models.EmailField(
+        max_length=100,
+        verbose_name="Email",
+        help_text="Máximo 100 caracteres"
+    )
+    comment = models.TextField(
+        max_length=1000,
+        verbose_name="Comentario",
+        help_text="Mínimo 5, Máximo 1000 caracteres"
+    )
     created_at = models.DateTimeField(default=timezone.now, verbose_name="Fecha de comentario")
     is_approved = models.BooleanField(default=True, verbose_name="Aprobado")  # Para moderación
     
