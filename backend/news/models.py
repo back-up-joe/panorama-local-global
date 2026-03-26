@@ -42,3 +42,29 @@ class Article(models.Model):
         if isinstance(self.content, list):
             self.paragraphs_count = len(self.content)
         super().save(*args, **kwargs)
+
+# Comentario para cada artículo
+class Comment(models.Model):
+    article = models.ForeignKey(
+        Article, 
+        on_delete=models.CASCADE, 
+        related_name='comments',
+        verbose_name="Artículo"
+    )
+    name = models.CharField(max_length=200, verbose_name="Nombre")
+    email = models.EmailField(verbose_name="Email")
+    comment = models.TextField(verbose_name="Comentario")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Fecha de comentario")
+    is_approved = models.BooleanField(default=True, verbose_name="Aprobado")  # Para moderación
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['article', 'created_at']),
+            models.Index(fields=['email']),
+        ]
+        verbose_name = 'Comentario'
+        verbose_name_plural = 'Comentarios'
+    
+    def __str__(self):
+        return f"Comentario de {self.name} en {self.article.title[:30]}..."

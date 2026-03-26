@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { articleService } from '../services/api';
-
+import CommentSection from './CommentSection';  // Importa el componente de comentarios
 import Footer from './Footer';
 
 const ArticleDetail = () => {
@@ -169,6 +169,9 @@ const ArticleDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* SECCIÓN DE COMENTARIOS */}
+      <CommentSection articleId={article.id} />
 
       {/* Botones de navegación */}
       <div className="d-flex justify-content-between mb-5">

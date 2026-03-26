@@ -44,4 +44,40 @@ export const articleService = {
   }
 };
 
+// Servicio específico para comentarios
+export const commentService = {
+  // Obtener comentarios de un artículo
+  getComments: async (articleId) => {
+    try {
+      const response = await api.get(`/articles/${articleId}/comments/`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching comments for article ${articleId}:`, error);
+      throw error;
+    }
+  },
+  
+  // Agregar un comentario
+  addComment: async (articleId, commentData) => {
+    try {
+      const response = await api.post(`/articles/${articleId}/add-comment/`, commentData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error adding comment to article ${articleId}:`, error);
+      throw error;
+    }
+  },
+  
+  // Obtener cantidad de comentarios
+  getCommentsCount: async (articleId) => {
+    try {
+      const response = await api.get(`/articles/${articleId}/comments-count/`);
+      return response.data.comments_count;
+    } catch (error) {
+      console.error(`Error fetching comments count for article ${articleId}:`, error);
+      throw error;
+    }
+  }
+};
+
 export default api;

@@ -99,3 +99,72 @@ body {
   font-weight: 700;
   font-size: 1.5rem;
 }
+
+/* Estilos para la sección de comentarios */
+.comments-section .comment-item {
+  transition: all 0.2s ease;
+}
+
+.comments-section .comment-item:hover {
+  background-color: #f8f9fa;
+  padding-left: 10px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.comments-section textarea {
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.comments-section .form-control:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.comments-section .btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  transition: all 0.2s ease;
+}
+
+.comments-section .btn-danger:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.comments-section .btn-danger:active {
+  transform: translateY(0);
+}
+
+.comments-section .alert {
+  border-radius: 10px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-item {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
