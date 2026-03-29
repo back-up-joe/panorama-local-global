@@ -15,19 +15,29 @@ const api = axios.create({
 });
 
 export const articleService = {
-  // Obtener lista de artículos
-  getArticles: async () => {
+  // Obtener lista de artículos con paginación
+  getArticles: async (page = 1, pageSize = 15) => {
     try {
-      console.log('Haciendo petición a:', `${API_BASE_URL}/articles/`);
-      const response = await api.get('articles/');
-      // const response = await apiBackend.get('articles/');
+      console.log(`Haciendo petición a: ${API_BASE_URL}/articles/?page=${page}&page_size=${pageSize}`);
+      
+      const response = await api.get('articles/', {
+        params: {
+          page: page,
+          page_size: pageSize
+        }
+      });
+      
       console.log('API Response STATUS:', response.status);
       console.log('API Response HEADERS:', response.headers);
+      console.log('API Response DATA:', response.data);
       
       return response.data;
     } catch (error) {      
-      console.error('Error COMPLETO fetching articles:');
-
+      console.error('Error COMPLETO fetching articles:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+      }
       throw error;
     }
   },

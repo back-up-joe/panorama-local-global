@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { articleService } from "../services/api";
 import visitService from "../services/visitService";
-
 import Footer from "./Footer";
 
 const ArticleList = () => {
@@ -13,33 +12,45 @@ const ArticleList = () => {
   const [totalArticles, setTotalArticles] = useState(0);
   const [totalVisits, setTotalVisits] = useState(0);
 
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize] = useState(9); // Tamaño de página por defecto
+
   useEffect(() => {
     fetchArticles();
     registerAndGetVisits();
-  }, []);
+  }, [currentPage]); // Se ejecuta cuando cambia la página
 
   const fetchArticles = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      console.log("Iniciando fetchArticles...");
-      const data = await articleService.getArticles();
+      console.log(`Iniciando fetchArticles para página ${currentPage}...`);
+      // Pasa currentPage y pageSize a la función getArticles
+      const data = await articleService.getArticles(currentPage, pageSize);
       console.log("Data recibida:", data);
 
       // La API devuelve un objeto con paginación
-      // La propiedad "results" contiene los artículos
       if (data && data.results && Array.isArray(data.results)) {
         console.log(
           `Recibidos ${data.results.length} artículos de ${data.count} totales`
         );
         setArticles(data.results);
-        setTotalArticles(data.count || data.results.length);
+        setTotalArticles(data.count);
+        
+        // Calcular total de páginas
+        const pages = Math.ceil(data.count / pageSize);
+        setTotalPages(pages);
+        
+        console.log(`Página ${currentPage} de ${pages}`);
       } else if (Array.isArray(data)) {
-        // Por si acaso en algún momento devuelve array directo
+        // Fallback por si acaso
         console.log(`Recibidos ${data.length} artículos`);
         setArticles(data);
         setTotalArticles(data.length);
+        setTotalPages(1);
       } else {
         console.error("Formato de datos inesperado:", data);
         setError("Formato de datos incorrecto recibido de la API");
@@ -51,6 +62,15 @@ const ArticleList = () => {
       setError(`Error ${status}: ${errorMsg}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para cambiar de página
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      // Scroll al inicio de la página
+      // window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -76,6 +96,89 @@ const ArticleList = () => {
   const filteredArticles = filterCategory
     ? articles.filter((article) => article.category === filterCategory)
     : articles;
+
+  // Componente de paginación
+  const Pagination = () => {
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return (
+      <nav aria-label="Navegación de páginas">
+        <ul className="pagination justify-content-center">
+          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+            <button 
+              className="page-link" 
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            >
+              &laquo;
+            </button>
+          </li>
+          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+            <button 
+              className="page-link" 
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              &lsaquo;
+            </button>
+          </li>
+          
+          {startPage > 1 && (
+            <li className="page-item disabled">
+              <span className="page-link">...</span>
+            </li>
+          )}
+          
+          {pages.map(page => (
+            <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+              <button 
+                className="page-link" 
+                onClick={() => handlePageChange(page)}
+              >
+                {page}
+              </button>
+            </li>
+          ))}
+          
+          {endPage < totalPages && (
+            <li className="page-item disabled">
+              <span className="page-link">...</span>
+            </li>
+          )}
+          
+          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+            <button 
+              className="page-link" 
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              &rsaquo;
+            </button>
+          </li>
+          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+            <button 
+              className="page-link" 
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              &raquo;
+            </button>
+          </li>
+        </ul>
+      </nav>
+    );
+  };
 
   if (loading) {
     return (
@@ -113,154 +216,157 @@ const ArticleList = () => {
 
   return (
     <>
-    <div className="container">
-      {/* Header con filtro de categorías */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Portal de noticias</h2>
-        {/*
-        <div className="d-flex align-items-center gap-3">
-          <span className="badge bg-danger ps-2 pe-2">
-            {filteredArticles.length} artículos
-          </span>
-        </div> */}  {/* SE PUEDE INSERTAR EL CONTADOR DE VISITAS ACÁ */} 
-        
-        {/* CONTADOR DE VISITAS */}
-        <div className="badge bg-danger ps-3 pe-3 py-2 fs-6">
-          {totalVisits.toLocaleString()} visitas
-        </div>     
-      </div>
-      <hr></hr>
-      <div>
-        {/*
-        <p>Aquí se comparten noticias nacionales e internacionales traídas desde diversos portales informativos. Queremos contribuir a la difusión de artículos y análisis que los medios de comunicación hegemónicos no profundizan. Estas noticias son obtenidas mediante el método de web scraping y esperamos ir ampliando la cantidad y diversidad de nuestras fuentes. No tenemos fines de lucro y agradecemos la difusión.</p>
-        */}
-        <p><i>Información para despertar, análisis para entender, herramientas para actuar.</i></p>
-      </div>
-      <hr></hr>
-
-      {/* Lista de artículos - MOSTRANDO TODOS */}
-      {filteredArticles.length === 0 ? (
-        <div className="alert alert-warning">
-          {articles.length === 0
-            ? "No hay artículos disponibles"
-            : `No hay artículos en la categoría "${filterCategory}"`}
-          {filterCategory && (
-            <button
-              className="btn btn-sm btn-warning ms-3"
-              onClick={() => setFilterCategory("")}
-            >
-              Ver todas
-            </button>
-          )}
+      <div className="container">
+        {/* Header con filtro de categorías */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2 className="mb-0">Portal de noticias</h2>
+          
+          {/* CONTADOR DE VISITAS */}
+          <div className="badge bg-danger ps-3 pe-3 py-2 fs-6">
+            {totalVisits.toLocaleString()} visitas
+          </div>     
         </div>
-      ) : (
-        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-          {filteredArticles.map((article) => (
-            <div className="col" key={article.id}>
-              <div className="card h-100 shadow-sm hover-shadow">
-                {/* Imagen del artículo */}
-                {article.image_url ? (
-                  <img
-                    src={article.image_url}
-                    className="card-img-top"
-                    alt={article.title}
-                    style={{
-                      height: "200px",
-                      objectFit: "cover",
-                      width: "100%",
-                    }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "";
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="card-img-top bg-secondary d-flex align-items-center justify-content-center"
-                    style={{ height: "200px" }}
-                  >
-                    <span className="text-white">Sin imagen</span>
-                  </div>
-                )}
+        <hr></hr>
+        <div>
+          <p><i>Información para despertar, análisis para entender, herramientas para actuar.</i></p>
+        </div>
+        <hr></hr>
 
-                <div className="card-body d-flex flex-column">
-                  {/* Categoría */}
-                  {article.category && (
-                    <div className="mb-2">
-                      <span className="badge bg-danger">
-                        {article.category}
-                      </span>
+        {/* Lista de artículos */}
+        {filteredArticles.length === 0 ? (
+          <div className="alert alert-warning">
+            {articles.length === 0
+              ? "No hay artículos disponibles"
+              : `No hay artículos en la categoría "${filterCategory}"`}
+            {filterCategory && (
+              <button
+                className="btn btn-sm btn-warning ms-3"
+                onClick={() => setFilterCategory("")}
+              >
+                Ver todas
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+              {filteredArticles.map((article) => (
+                <div className="col" key={article.id}>
+                  <div className="card h-100 shadow-sm hover-shadow">
+                    {/* Imagen del artículo */}
+                    {article.image_url ? (
+                      <img
+                        src={article.image_url}
+                        className="card-img-top"
+                        alt={article.title}
+                        style={{
+                          height: "200px",
+                          objectFit: "cover",
+                          width: "100%",
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "";
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                        style={{ height: "200px" }}
+                      >
+                        <span className="text-white">Sin imagen</span>
+                      </div>
+                    )}
+
+                    <div className="card-body d-flex flex-column">
+                      {/* Categoría */}
+                      {article.category && (
+                        <div className="mb-2">
+                          <span className="badge bg-danger">
+                            {article.category}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Título */}
+                      <h5
+                        className="card-title"
+                        style={{
+                          minHeight: "auto",
+                          lineHeight: "1.4",
+                          marginBottom: "0.75rem",
+                        }}
+                      >
+                        {article.title}
+                      </h5>
+
+                      {/* Subtítulo */}
+                      <p
+                        className="card-text text-muted"
+                        style={{
+                          minHeight: "auto",
+                          lineHeight: "1.5",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        {article.subtitle && article.subtitle.length > 200
+                          ? `${article.subtitle.substring(0, 200)}...`
+                          : article.subtitle}
+                      </p>
+
+                      <div className="mt-auto">
+                        {/* Información de fecha y autor */}
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <small className="text-muted">
+                            <i className="bi bi-calendar me-1"></i>
+                            {article.publication_date}
+                          </small>
+                          <small className="text-muted">
+                            <i className="bi bi-person me-1"></i>
+                            {article.author || "Anónimo"}
+                          </small>
+                        </div>
+
+                        {/* Botón para ver detalles */}
+                        <Link
+                          to={`/article/${article.id}`}
+                          className="btn btn-danger w-100"
+                        >
+                          <i className="bi bi-eye me-1"></i>
+                          Leer artículo
+                        </Link>
+                      </div>
                     </div>
-                  )}
-
-                  {/* Título - SIN CORTE, altura automática */}
-                  <h5
-                    className="card-title"
-                    style={{
-                      minHeight: "auto",
-                      lineHeight: "1.4",
-                      marginBottom: "0.75rem",
-                    }}
-                  >
-                    {article.title}
-                  </h5>
-
-                  {/* Subtítulo - con límite de caracteres */}
-                  <p
-                    className="card-text text-muted"
-                    style={{
-                      minHeight: "auto",
-                      lineHeight: "1.5",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    {article.subtitle.length > 200
-                      ? `${article.subtitle.substring(0, 200)}...`
-                      : article.subtitle}
-                  </p>
-
-                  <div className="mt-auto">
-                    {/* Información de fecha y autor */}
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <small className="text-muted">
-                        <i className="bi bi-calendar me-1"></i>
-                        {article.publication_date}
-                      </small>
-                      <small className="text-muted">
-                        <i className="bi bi-person me-1"></i>
-                        {article.author || "Anónimo"}
-                      </small>
-                    </div>
-
-                    {/* Botón para ver detalles */}
-                    <Link
-                      to={`/article/${article.id}`}
-                      className="btn btn-danger w-100"
-                    >
-                      <i className="bi bi-eye me-1"></i>
-                      Leer artículo
-                    </Link>
                   </div>
                 </div>
+              ))}
+            </div>
+            
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="mt-4">
+                <Pagination />
+              </div>
+            )}
+
+            {/* Información del total */}
+            <div className="mt-4 text-center">
+              <div className="alert alert-light border">
+                <p className="mb-0">
+                  Mostrando <strong>{articles.length}</strong> artículos de <strong>{totalArticles}</strong>
+                  {filterCategory && ` en categoría "${filterCategory}"`}
+                  <br />
+                  <small className="text-muted">
+                    Página {currentPage} de {totalPages}
+                  </small>
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Información del total */}
-      {filteredArticles.length > 0 && (
-        <div className="mt-4 text-center">
-          <div className="alert alert-light border">
-            <p className="mb-0">
-              Mostrando <strong>{articles.length}</strong> artículos
-            </p>
-          </div>
-        </div>
-      )}      
-    </div>  
-    <Footer/>
-  </>   
+          </>
+        )}
+      </div>  
+      <Footer/>
+    </>   
   );
 };
 
