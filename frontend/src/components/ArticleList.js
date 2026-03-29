@@ -353,7 +353,7 @@ const ArticleList = () => {
             <div className="mt-4 text-center">
               <div className="alert alert-light border">
                 <p className="mb-0">
-                  Mostrando <strong>{articles.length}</strong> artículos de <strong>{totalArticles}</strong>
+                  Mostrando<strong>{articles.length}</strong> artículos de <strong>{totalArticles}</strong> totales
                   {filterCategory && ` en categoría "${filterCategory}"`}
                   <br />
                   <small className="text-muted">
