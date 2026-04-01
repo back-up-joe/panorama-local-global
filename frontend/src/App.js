@@ -16,7 +16,7 @@ function App() {
         <div className="container mt-4">
           <Routes>
             <Route path="/" element={<ArticleList />} />
-            <Route path="/article/:id" element={<ArticleDetail />} />
+            <Route path="/article/:slug" element={<ArticleDetail />} />
           </Routes>
         </div>
       </div>

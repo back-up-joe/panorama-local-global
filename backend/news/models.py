@@ -1,9 +1,11 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 
 class Article(models.Model):
     url = models.URLField(max_length=500, unique=True, verbose_name="URL")
     title = models.CharField(max_length=500, verbose_name="Título")
+    slug = models.SlugField(max_length=500, unique=True, blank=True, verbose_name="Slug")
     subtitle = models.TextField(verbose_name="Bajada/Subtítulo")
     image_url = models.URLField(max_length=500, verbose_name="URL Imagen")
     content = models.JSONField(default=list, verbose_name="Contenido")
@@ -22,6 +24,7 @@ class Article(models.Model):
         ordering = ['-scraped_at']
         indexes = [
             models.Index(fields=['url']),
+            models.Index(fields=['slug']),
             models.Index(fields=['scraped_at']),
             models.Index(fields=['category']),
             models.Index(fields=['author']),
@@ -38,9 +41,23 @@ class Article(models.Model):
         return ' '.join(self.content) if isinstance(self.content, list) else ''
     
     def save(self, *args, **kwargs):
-        """Actualiza automáticamente el conteo de párrafos"""
+        """Actualiza automáticamente el conteo de párrafos y genera slug"""
         if isinstance(self.content, list):
             self.paragraphs_count = len(self.content)
+
+        # Generar slug si no existe
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+
+            # Asegurar unicidad del slug
+            while Article.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+            
         super().save(*args, **kwargs)
 
 # Comentario para cada artículo

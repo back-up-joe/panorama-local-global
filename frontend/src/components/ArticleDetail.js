@@ -5,19 +5,19 @@ import CommentSection from './CommentSection';  // Importa el componente de come
 import Footer from './Footer';
 
 const ArticleDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchArticle();
-  }, [id]);
+  }, [slug]);
 
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const data = await articleService.getArticleDetail(id);
+      const data = await articleService.getArticleDetail(slug);
       setArticle(data);
     } catch (err) {
       setError('Error al cargar el artículo. Por favor, intente nuevamente.');
@@ -171,7 +171,7 @@ const ArticleDetail = () => {
       </div>
 
       {/* SECCIÓN DE COMENTARIOS */}
-      <CommentSection articleId={article.id} />
+      <CommentSection articleId={article.slug} />
 
       {/* Botones de navegación */}
       <div className="d-flex justify-content-between mb-5">

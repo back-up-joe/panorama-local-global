@@ -68,13 +68,13 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = [
-            'id', 'url', 'title', 'subtitle', 'image_url',
+            'id', 'url', 'slug', 'title', 'subtitle', 'image_url',
             'content', 'paragraphs_count', 'full_content',
             'publication_date', 'author', 'category',
             'scraped_at', 'is_active', 'published_on_instagram',
             'comments', 'comments_count'
         ]
-        read_only_fields = ['scraped_at', 'is_active', 'paragraphs_count']
+        read_only_fields = ['scraped_at', 'is_active', 'paragraphs_count', 'slug']
     
     def get_full_content(self, obj):
         return obj.full_content
@@ -91,9 +91,9 @@ class ArticleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = [
-            'id', 'url', 'title', 'subtitle', 'image_url',
+            'id', 'slug', 'url', 'title', 'subtitle', 'image_url',
             'publication_date', 'author', 'category', 'scraped_at',
-            'comments_count'  # Añadimos contador de comentarios en la lista
+            'comments_count'
         ]
 
     def get_comments_count(self, obj):

@@ -383,7 +383,7 @@ const fetchArticles = async () => {
 
                         {/* Botón para ver detalles */}
                         <Link
-                          to={`/article/${article.id}`}
+                          to={`/article/${article.slug}`}
                           className="btn btn-danger w-100"
                         >
                           <i className="bi bi-eye me-1"></i>

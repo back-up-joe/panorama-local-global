@@ -23,10 +23,11 @@ from .tasks import scrap_elsiglo
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.filter(is_active=True)
     permission_classes = [AllowAny]
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'slug'
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'author']
-    # MODIFICADO: Ahora solo busca en el título
-    search_fields = ['title']  # Cambiado de ['title', 'subtitle', 'content', 'author'] a solo ['title']
+    search_fields = ['title']
     ordering_fields = ['scraped_at', 'publication_date']
     ordering = ['-publication_date']
     
@@ -35,6 +36,15 @@ class ArticleViewSet(viewsets.ModelViewSet):
             return ArticleListSerializer
         return ArticleSerializer
     
+    # Mantener compatibilidad con IDs para los endpoints que los necesitan
+    @action(detail=False, methods=['get'], url_path='by-id/(?P<pk>[^/.]+)')
+    def get_by_id(self, request, pk=None):
+        """Endpoint alternativo para obtener por ID (para compatibilidad)"""
+        article = get_object_or_404(Article, pk=pk)
+        serializer = self.get_serializer(article)
+        return Response(serializer.data)
+    
+    # Mantener compatibilidad con IDs para los endpoints que los necesitan
     @action(detail=False, methods=['post'])
     def trigger_scraping(self, request):
         """Ejecutar scraping manualmente"""
@@ -139,7 +149,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     # ============= ACCIONES PARA COMENTARIOS =============
     
     @action(detail=True, methods=['get'], url_path='comments')
-    def get_comments(self, request, pk=None):
+    def get_comments(self, request, slug=None):
         """Obtener todos los comentarios de un artículo específico"""
         article = self.get_object()
         comments = article.comments.filter(is_approved=True)
@@ -147,7 +157,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     @action(detail=True, methods=['post'], url_path='add-comment')
-    def add_comment(self, request, pk=None):
+    def add_comment(self, request, slug=None):
         """Agregar un comentario a un artículo específico"""
         article = self.get_object()
         
@@ -166,7 +176,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['get'], url_path='comments-count')
-    def comments_count(self, request, pk=None):
+    def comments_count(self, request, slug=None):
         """Obtener el número de comentarios de un artículo"""
         article = self.get_object()
         count = article.comments.filter(is_approved=True).count()
