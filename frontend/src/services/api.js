@@ -3,10 +3,9 @@ import axios from 'axios';
 // Configura la URL base de API Django desde las variables de entorno
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
-console.log('API_BASE_URL desde .env:', API_BASE_URL);  // Añade esta línea
+console.log('API_BASE_URL desde .env:', API_BASE_URL);
 
 const api = axios.create({
-// const apiBackend = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
@@ -15,20 +14,28 @@ const api = axios.create({
 });
 
 export const articleService = {
-  // Obtener lista de artículos con paginación
-  getArticles: async (page = 1, pageSize = 15) => {
+  // Obtener lista de artículos con paginación y búsqueda
+  getArticles: async (page = 1, pageSize = 15, search = '') => {
     try {
       console.log(`Haciendo petición a: ${API_BASE_URL}/articles/?page=${page}&page_size=${pageSize}`);
+      if (search) {
+        console.log(`Con término de búsqueda: "${search}"`);
+      }
       
-      const response = await api.get('articles/', {
-        params: {
-          page: page,
-          page_size: pageSize
-        }
-      });
+      // Construir los parámetros
+      const params = {
+        page: page,
+        page_size: pageSize
+      };
+      
+      // Agregar parámetro de búsqueda si existe
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+      
+      const response = await api.get('articles/', { params });
       
       console.log('API Response STATUS:', response.status);
-      console.log('API Response HEADERS:', response.headers);
       console.log('API Response DATA:', response.data);
       
       return response.data;

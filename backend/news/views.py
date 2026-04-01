@@ -25,9 +25,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'author']
-    search_fields = ['title', 'subtitle', 'content', 'author']
+    # MODIFICADO: Ahora solo busca en el título
+    search_fields = ['title']  # Cambiado de ['title', 'subtitle', 'content', 'author'] a solo ['title']
     ordering_fields = ['scraped_at', 'publication_date']
-    # ordering = ['-scraped_at']
     ordering = ['-publication_date']
     
     def get_serializer_class(self):
@@ -109,20 +109,17 @@ class ArticleViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='search')
     def search_articles(self, request):
-        """Búsqueda avanzada simplificada"""
+        """Búsqueda avanzada simplificada - MODIFICADA para buscar solo en título"""
         query = request.query_params.get('q', '')
         category = request.query_params.get('category', '')
         author = request.query_params.get('author', '')
         
         queryset = self.filter_queryset(self.get_queryset())
         
-        # Filtros básicos que funcionan seguro
+        # MODIFICADO: Ahora solo busca en el título
         if query:
             queryset = queryset.filter(
-                Q(title__icontains=query) |
-                Q(subtitle__icontains=query) |
-                Q(author__icontains=query) |
-                Q(category__icontains=query)
+                Q(title__icontains=query)  # Solo título, eliminé los otros campos
             )
         
         if category:
@@ -139,7 +136,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     
-    # ============= NUEVAS ACCIONES PARA COMENTARIOS =============
+    # ============= ACCIONES PARA COMENTARIOS =============
     
     @action(detail=True, methods=['get'], url_path='comments')
     def get_comments(self, request, pk=None):

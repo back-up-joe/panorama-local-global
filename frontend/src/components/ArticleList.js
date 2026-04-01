@@ -1,5 +1,6 @@
+// src/components/ArticleList.js (versión actualizada)
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { articleService } from "../services/api";
 import visitService from "../services/visitService";
 import Footer from "./Footer";
@@ -11,78 +12,99 @@ const ArticleList = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [totalArticles, setTotalArticles] = useState(0);
   const [totalVisits, setTotalVisits] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(9); // Tamaño de página por defecto
+  const [pageSize] = useState(9);
+  
+  // Obtener parámetros de búsqueda de la URL
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Obtener término de búsqueda de la URL
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      setSearchTerm(searchFromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchArticles();
     registerAndGetVisits();
-  }, [currentPage]); // Se ejecuta cuando cambia la página
+  }, [currentPage, searchTerm]); // Añadir searchTerm como dependencia
 
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Escuchar eventos de búsqueda personalizados
+  useEffect(() => {
+    const handleSearchEvent = (event) => {
+      setSearchTerm(event.detail);
+      setCurrentPage(1); // Resetear a primera página cuando se busca
+    };
+    
+    window.addEventListener('search', handleSearchEvent);
+    
+    return () => {
+      window.removeEventListener('search', handleSearchEvent);
+    };
+  }, []);
 
-      console.log(`Iniciando fetchArticles para página ${currentPage}...`);
-      // Pasa currentPage y pageSize a la función getArticles
-      const data = await articleService.getArticles(currentPage, pageSize);
-      console.log("Data recibida:", data);
+  // En ArticleList.js, modifica la función fetchArticles
+const fetchArticles = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-      // La API devuelve un objeto con paginación
-      if (data && data.results && Array.isArray(data.results)) {
-        console.log(
-          `Recibidos ${data.results.length} artículos de ${data.count} totales`
-        );
-        setArticles(data.results);
-        setTotalArticles(data.count);
-        
-        // Calcular total de páginas
-        const pages = Math.ceil(data.count / pageSize);
-        setTotalPages(pages);
-        
-        console.log(`Página ${currentPage} de ${pages}`);
-      } else if (Array.isArray(data)) {
-        // Fallback por si acaso
-        console.log(`Recibidos ${data.length} artículos`);
-        setArticles(data);
-        setTotalArticles(data.length);
-        setTotalPages(1);
-      } else {
-        console.error("Formato de datos inesperado:", data);
-        setError("Formato de datos incorrecto recibido de la API");
-      }
-    } catch (err) {
-      console.error("Error en fetchArticles:", err);
-      const errorMsg = err.message || "Error desconocido";
-      const status = err.response?.status || "N/A";
-      setError(`Error ${status}: ${errorMsg}`);
-    } finally {
-      setLoading(false);
+    console.log(`Iniciando fetchArticles para página ${currentPage}...`);
+    console.log(`Término de búsqueda: "${searchTerm}"`);
+    
+    // Pasa searchTerm a la función getArticles
+    const data = await articleService.getArticles(currentPage, pageSize, searchTerm);
+    console.log("Data recibida:", data);
+
+    if (data && data.results && Array.isArray(data.results)) {
+      console.log(
+        `Recibidos ${data.results.length} artículos de ${data.count} totales`
+      );
+      setArticles(data.results);
+      setTotalArticles(data.count);
+      
+      const pages = Math.ceil(data.count / pageSize);
+      setTotalPages(pages);
+      
+      console.log(`Página ${currentPage} de ${pages}`);
+    } else if (Array.isArray(data)) {
+      console.log(`Recibidos ${data.length} artículos`);
+      setArticles(data);
+      setTotalArticles(data.length);
+      setTotalPages(1);
+    } else {
+      console.error("Formato de datos inesperado:", data);
+      setError("Formato de datos incorrecto recibido de la API");
     }
-  };
+  } catch (err) {
+    console.error("Error en fetchArticles:", err);
+    const errorMsg = err.message || "Error desconocido";
+    const status = err.response?.status || "N/A";
+    setError(`Error ${status}: ${errorMsg}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Función para cambiar de página
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      // Scroll al inicio de la página
-      // window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  // Función para registrar y obtener visitas
   const registerAndGetVisits = async () => {
-    console.log("Registrando visita..."); // Para depuración
+    console.log("Registrando visita...");
     const visits = await visitService.registerVisit();
-    console.log("Visitas obtenidas:", visits); // Para depuración
+    console.log("Visitas obtenidas:", visits);
     setTotalVisits(visits);
   };  
 
-  // Extraer categorías únicas de los artículos
   const categories =
     articles.length > 0
       ? [
@@ -92,12 +114,10 @@ const ArticleList = () => {
         ]
       : [];
 
-  // Filtrar artículos por categoría
   const filteredArticles = filterCategory
     ? articles.filter((article) => article.category === filterCategory)
     : articles;
 
-  // Componente de paginación
   const Pagination = () => {
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -232,18 +252,52 @@ const ArticleList = () => {
         </div>
         <hr></hr>
 
+        {/* Mostrar término de búsqueda activo */}
+        {searchTerm && (
+        <div 
+          className="alert alert-dismissible fade show mb-4" 
+          style={{
+            backgroundColor: '#fff0f0',
+            borderColor: '#f6c5c5',
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            color: '#721c24'
+        }}
+        >
+        <i className="bi bi-search me-2" style={{ color: '#dc3545' }}></i>
+        Resultados para: <strong style={{ color: '#dc3545' }}>"{searchTerm}"</strong>
+        <button 
+          type="button" 
+          className="btn-close" 
+          onClick={() => {
+            setSearchTerm('');
+            setCurrentPage(1);
+            window.dispatchEvent(new CustomEvent('search', { detail: '' }));
+          }}
+          style={{ filter: 'brightness(0.8)' }}
+        ></button>
+        </div>
+      )}
+
         {/* Lista de artículos */}
         {filteredArticles.length === 0 ? (
           <div className="alert alert-warning">
             {articles.length === 0
-              ? "No hay artículos disponibles"
+              ? searchTerm 
+                ? `No se encontraron artículos que coincidan con "${searchTerm}"`
+                : "No hay artículos disponibles"
               : `No hay artículos en la categoría "${filterCategory}"`}
-            {filterCategory && (
+            {(filterCategory || searchTerm) && (
               <button
                 className="btn btn-sm btn-warning ms-3"
-                onClick={() => setFilterCategory("")}
+                onClick={() => {
+                  setFilterCategory("");
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                  window.dispatchEvent(new CustomEvent('search', { detail: '' }));
+                }}
               >
-                Ver todas
+                {filterCategory ? "Ver todas" : "Limpiar búsqueda"}
               </button>
             )}
           </div>
@@ -353,7 +407,7 @@ const ArticleList = () => {
             <div className="mt-4 text-center">
               <div className="alert alert-light border">
                 <p className="mb-0">
-                  Mostrando<strong>{articles.length}</strong> artículos de <strong>{totalArticles}</strong> totales
+                  <strong>{articles.length}</strong> artículos de <strong>{totalArticles}</strong>
                   {filterCategory && ` en categoría "${filterCategory}"`}
                   <br />
                   <small className="text-muted">
