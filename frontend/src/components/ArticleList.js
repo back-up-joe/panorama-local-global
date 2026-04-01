@@ -281,27 +281,58 @@ const fetchArticles = async () => {
 
         {/* Lista de artículos */}
         {filteredArticles.length === 0 ? (
-          <div className="alert alert-warning">
-            {articles.length === 0
-              ? searchTerm 
-                ? `No se encontraron artículos que coincidan con "${searchTerm}"`
-                : "No hay artículos disponibles"
-              : `No hay artículos en la categoría "${filterCategory}"`}
-            {(filterCategory || searchTerm) && (
-              <button
-                className="btn btn-sm btn-warning ms-3"
-                onClick={() => {
-                  setFilterCategory("");
-                  setSearchTerm("");
-                  setCurrentPage(1);
-                  window.dispatchEvent(new CustomEvent('search', { detail: '' }));
-                }}
-              >
-                {filterCategory ? "Ver todas" : "Limpiar búsqueda"}
-              </button>
-            )}
-          </div>
-        ) : (
+  <div className="alert alert-warning" style={{
+    backgroundColor: '#fff8e7',
+    borderColor: '#ffd966',
+    borderWidth: '2px',
+    borderStyle: 'solid',
+    color: '#856404',
+    borderRadius: '8px'
+  }}>
+    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+      <div className="d-flex align-items-center">
+        <i className="bi bi-info-circle-fill me-2 fs-5"></i>
+        <span>
+          {articles.length === 0
+            ? searchTerm 
+              ? `No se encontraron artículos que coincidan con "${searchTerm}"`
+              : "No hay artículos disponibles"
+            : `No hay artículos en la categoría "${filterCategory}"`}
+        </span>
+      </div>
+      {(filterCategory || searchTerm) && (
+        <button
+          className="btn btn-outline-warning btn-sm"
+          onClick={() => {
+            setFilterCategory("");
+            setSearchTerm("");
+            setCurrentPage(1);
+            window.dispatchEvent(new CustomEvent('search', { detail: '' }));
+          }}
+          style={{
+            borderRadius: '8px',
+            padding: '6px 16px',
+            fontWeight: '500',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#ffc107';
+            e.target.style.color = '#fff';
+            e.target.style.borderColor = '#ffc107';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'transparent';
+            e.target.style.color = '#856404';
+            e.target.style.borderColor = '#ffd966';
+          }}
+        >
+          <i className="bi bi-x-circle me-1"></i>
+          {filterCategory ? "Ver todas las categorías" : "Limpiar búsqueda"}
+        </button>
+      )}
+    </div>
+  </div>
+) : (
           <>
             <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
               {filteredArticles.map((article) => (
