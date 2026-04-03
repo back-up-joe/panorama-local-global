@@ -43,7 +43,7 @@ const SearchBar = () => {
                   style={{
                     fontSize: '1rem',
                     border: '1px solid #ced4da',
-                    borderRadius: '24px 0 0 24px',
+                    borderRadius: '8px 0 0 8px',
                     borderRight: 'none',
                     padding: '0.5rem 0.75rem',
                     height: '48px'
@@ -73,7 +73,7 @@ const SearchBar = () => {
                   type="submit"
                   className="btn btn-danger"
                   style={{
-                    borderRadius: '0 24px 24px 0',
+                    borderRadius: '0 8px 8px 0',
                     paddingLeft: '20px',
                     paddingRight: '20px',
                     fontSize: '1rem',

@@ -239,7 +239,7 @@ const fetchArticles = async () => {
       <div className="container">
         {/* Header con filtro de categorías */}
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">Portal de noticias</h2>
+          <h2 className="mb-0">Portal de Noticias</h2>
           
           {/* CONTADOR DE VISITAS */}
           <div className="badge bg-danger ps-3 pe-3 py-2 fs-6">
