@@ -8,7 +8,7 @@ const Navbar = () => {
       <nav className="navbar navbar-expand-lg navbar-dark bg-danger shadow">
         <div className="container">
           <Link className="navbar-brand" to="/">
-            Resistencia Informativa
+            RESISTENCIA INFORMATIVA
           </Link>
         </div>
       </nav>
