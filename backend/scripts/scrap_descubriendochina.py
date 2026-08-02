@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import django
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import re
 
 # Configurar Django
@@ -126,7 +126,7 @@ def extraer_datos_noticia(driver, url):
         'bajada': 'No encontrada',
         'imagen': 'No encontrada',
         'contenido': [],
-        'fecha': None,
+        'fecha': None,  # Esto debe ser un objeto date
         'autor': 'No encontrado',
         'categoria': 'No encontrada'
     }
@@ -141,9 +141,14 @@ def extraer_datos_noticia(driver, url):
         datos['contenido'] = _extraer_contenido(driver)
         
         fecha_autor = _extraer_fecha_autor(driver)
-        datos['fecha'] = fecha_autor['fecha']
+        datos['fecha'] = fecha_autor['fecha']  # Esto debe ser un objeto date o None
         datos['autor'] = fecha_autor['autor']
         datos['categoria'] = _extraer_categoria(driver)
+        
+        # Verificar que la fecha sea un objeto date o None
+        if datos['fecha'] and not isinstance(datos['fecha'], date):
+            print(f"  ERROR: La fecha no es un objeto date: {datos['fecha']} (tipo: {type(datos['fecha'])})")
+            datos['fecha'] = None
         
     except Exception as e:
         print(f"Error general al procesar noticia {url}: {e}")
@@ -202,87 +207,164 @@ def _extraer_categoria(driver):
     except:
         return "Politica"
 
-MESES_ES = {
-    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
-    "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
-    "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
-}
+def _parsear_fecha_relativa(texto_fecha: str, fecha_referencia: date) -> date | None:
+    """
+    Convierte una fecha relativa como "hace 2 días" a una fecha absoluta
+    """
+    if not texto_fecha:
+        return None
+    
+    texto_fecha = texto_fecha.lower().strip()
+    print(f"  Parseando fecha relativa: '{texto_fecha}'")
+    
+    # Patrones para fechas relativas
+    patrones = [
+        (r'hace\s+(\d+)\s+días?', 'dias'),
+        (r'hace\s+(\d+)\s+horas?', 'horas'),
+        (r'hace\s+(\d+)\s+minutos?', 'minutos'),
+        (r'hace\s+(\d+)\s+semanas?', 'semanas'),
+        (r'hace\s+(\d+)\s+meses?', 'meses'),
+        (r'hace\s+(\d+)\s+años?', 'años'),
+        (r'ayer', 'ayer'),
+        (r'hoy', 'hoy'),
+        (r'(\d+)\s+días?', 'dias'),
+        (r'(\d+)\s+horas?', 'horas'),
+    ]
+    
+    for patron, tipo in patrones:
+        match = re.search(patron, texto_fecha)
+        if match:
+            if tipo == 'ayer':
+                return fecha_referencia - timedelta(days=1)
+            elif tipo == 'hoy':
+                return fecha_referencia
+            else:
+                cantidad = int(match.group(1))
+                if tipo == 'dias':
+                    return fecha_referencia - timedelta(days=cantidad)
+                elif tipo == 'horas':
+                    return fecha_referencia
+                elif tipo == 'minutos':
+                    return fecha_referencia
+                elif tipo == 'semanas':
+                    return fecha_referencia - timedelta(weeks=cantidad)
+                elif tipo == 'meses':
+                    return fecha_referencia - timedelta(days=cantidad * 30)
+                elif tipo == 'años':
+                    return fecha_referencia - timedelta(days=cantidad * 365)
+    
+    return None
 
-def _parsear_fecha(fecha_str: str, driver=None) -> date | None:
+def _parsear_fecha_absoluta(fecha_str: str) -> date | None:
+    """
+    Parsea una fecha absoluta en diferentes formatos
+    """
     if not fecha_str:
         return None
 
-    fecha_str = fecha_str.strip().lower()
+    fecha_str = fecha_str.strip()
+    fecha_str = fecha_str.replace('"', '').replace("'", '')
     
-    if "hace" in fecha_str and driver:
-        try:
-            time_ago = driver.find_element(By.CSS_SELECTOR, "time-ago")
-            title = time_ago.get_attribute("title")
-            if title:
-                fecha_str = title
-        except:
-            pass
+    # Formato ISO: 2026-07-29
+    try:
+        return datetime.strptime(fecha_str, "%Y-%m-%d").date()
+    except ValueError:
+        pass
     
-    formatos = ["%Y-%m-%d", "%d/%m/%Y", "%d %B, %Y", "%B %d, %Y"]
-    for fmt in formatos:
-        try:
-            return datetime.strptime(fecha_str, fmt).date()
-        except ValueError:
-            pass
+    # Formato: 29/07/2026
+    try:
+        return datetime.strptime(fecha_str, "%d/%m/%Y").date()
+    except ValueError:
+        pass
     
-    m = re.match(r"(\d{1,2})\s+([a-záéíóú]+),?\s+(\d{4})", fecha_str)
+    meses_es = {
+        'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+        'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+        'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+    }
+    
+    # Formato: 29 julio, 2026
+    m = re.match(r"(\d{1,2})\s+([a-záéíóú]+),?\s+(\d{4})", fecha_str.lower())
     if m:
         dia, mes, anio = m.groups()
-        if mes in MESES_ES:
+        if mes in meses_es:
             try:
-                return date(int(anio), MESES_ES[mes], int(dia))
+                return date(int(anio), meses_es[mes], int(dia))
             except ValueError:
                 pass
 
-    m = re.match(r"([a-záéíóú]+)\s+(\d{1,2}),?\s+(\d{4})", fecha_str)
+    # Formato: julio 29, 2026
+    m = re.match(r"([a-záéíóú]+)\s+(\d{1,2}),?\s+(\d{4})", fecha_str.lower())
     if m:
         mes, dia, anio = m.groups()
-        if mes in MESES_ES:
+        if mes in meses_es:
             try:
-                return date(int(anio), MESES_ES[mes], int(dia))
+                return date(int(anio), meses_es[mes], int(dia))
             except ValueError:
                 pass
 
     return None
 
 def _extraer_fecha_autor(driver):
+    """
+    Extrae fecha y autor de la noticia en Wix
+    """
     fecha = None
     autor = "No encontrado"
+    
+    fecha_referencia = date.today()
 
     try:
         lista_metadata = driver.find_element(By.CSS_SELECTOR, "ul.NtBDdE")
         items = lista_metadata.find_elements(By.TAG_NAME, "li")
         
-        for item in items:
-            texto = item.text.strip()
-            if "hace" in texto or "min" in texto or "días" in texto:
-                try:
-                    time_element = item.find_element(By.CSS_SELECTOR, "time-ago")
-                    title = time_element.get_attribute("title")
-                    if title:
-                        fecha = _parsear_fecha(title, driver)
-                    else:
-                        fecha = _parsear_fecha(texto, driver)
-                except:
-                    fecha = _parsear_fecha(texto, driver)
-            else:
-                autor = texto
+        print(f"  Encontrados {len(items)} items de metadata")
         
+        for idx, item in enumerate(items):
+            texto = item.text.strip()
+            print(f"    Item {idx}: '{texto}'")
+            
+            # Buscar el elemento time-ago (contiene la fecha relativa)
+            try:
+                time_element = item.find_element(By.CSS_SELECTOR, "time-ago")
+                title = time_element.get_attribute("title")
+                if title:
+                    print(f"      Título time-ago: '{title}'")
+                    fecha = _parsear_fecha_absoluta(title)
+                    if not fecha:
+                        fecha = _parsear_fecha_relativa(texto, fecha_referencia)
+                    if fecha:
+                        print(f"      Fecha parseada del título: {fecha}")
+                        continue
+            except:
+                pass
+            
+            # Si no se encontró el time-ago, intentar parsear el texto directamente
+            if "hace" in texto or "ayer" in texto or "hoy" in texto:
+                fecha = _parsear_fecha_relativa(texto, fecha_referencia)
+                if fecha:
+                    print(f"      Fecha parseada del texto: {fecha}")
+                    continue
+            
+            # Si no es fecha, probablemente es el autor
+            if "hace" not in texto and "min" not in texto and "días" not in texto and "lectura" not in texto:
+                if texto and len(texto) > 2:
+                    autor = texto
+                    print(f"      Autor encontrado: '{autor}'")
+        
+        # Si no se encontró el autor, buscar directamente
         if autor == "No encontrado":
             try:
                 autor_element = driver.find_element(By.CSS_SELECTOR, "span.user-name")
                 autor = autor_element.text
+                print(f"  Autor (fallback): '{autor}'")
             except:
                 pass
 
     except Exception as e:
         print(f"Error al extraer fecha/autor: {e}")
     
+    print(f"  Fecha final: {fecha} (tipo: {type(fecha)}), Autor: {autor}")
     return {'fecha': fecha, 'autor': autor}
 
 def guardar_en_db(datos):
@@ -293,18 +375,27 @@ def guardar_en_db(datos):
         
         contenido_texto = '\n\n'.join(datos['contenido'])
         
+        print(f"  Guardando fecha: {datos['fecha']} (tipo: {type(datos['fecha'])})")
+        
+        # Verificar que la fecha sea un objeto date o None
+        fecha_guardar = datos['fecha']
+        if fecha_guardar and not isinstance(fecha_guardar, date):
+            print(f"  ERROR: La fecha no es un objeto date: {fecha_guardar}")
+            fecha_guardar = None
+        
         articulo = Article.objects.create(
             url=datos['url'],
             title=datos['titular'],
             subtitle=datos['bajada'],
             image_url=datos['imagen'],
             content=contenido_texto,
-            publication_date=datos['fecha'],
+            publication_date=fecha_guardar,  # Este es el campo correcto
             author=datos['autor'],
             category=datos['categoria']
         )
         
         print(f"Guardado: {articulo.title[:60]}...")
+        print(f"  Fecha guardada en DB: {articulo.publication_date}")
         return True
         
     except Exception as e:
@@ -318,6 +409,8 @@ def ejecutar_scraping(max_noticias=10):
     try:
         print("\n" + "="*80)
         print("SCRAPING DE DESCUBRIENDOCHINA.ORG - CATEGORÍA POLÍTICA")
+        print("="*80)
+        print(f"Fecha de referencia para fechas relativas: {date.today()}")
         print("="*80)
         
         driver = configurar_driver()
